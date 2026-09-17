@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stallhart Destanı — Evren Ansiklopedisi">
+<title>Evren · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+#lore-sec { background: var(--bg); }
+#lore-sec .inn { padding-top: 2rem; }
+
+/* Tab paneller */
+.tab-p { display: none; }
+.tab-p.on { display: block; }
+
+/* Evren tab grid */
+.lore-cards-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+@media (max-width: 640px) { .lore-cards-grid { grid-template-columns: 1fr; } }
+
+/* Timeline filtresi */
+.tl-filters { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+.tl-legend { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.tl-leg-item { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--parchd); font-style: italic; font-family: 'IM Fell English', serif; }
+.tl-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.tl-leg-dot.ruler    { background: var(--gold); }
+.tl-leg-dot.war      { background: var(--blood); }
+.tl-leg-dot.crisis   { background: #5A3A1A; }
+.tl-leg-dot.religious{ background: #1A3A5A; }
+
+/* Sözlük tipi filtresi */
+.gls-types { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.gls-search-wrap {
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: .4rem 1rem; max-width: 320px; margin-bottom: 1.5rem;
+}
+.gls-search-wrap svg { width: 14px; height: 14px; flex-shrink: 0; stroke: var(--goldd); fill: none; stroke-width: 1.8; stroke-linecap: round; }
+#gls-search { flex: 1; background: none; border: none; outline: none; font-family: 'IM Fell English', serif; font-size: .88rem; color: var(--parchl); caret-color: var(--gold); }
+#gls-search::placeholder { color: var(--parchd); }
+
+.gls-count { font-family: 'IM Fell English', serif; font-style: italic; font-size: .78rem; color: var(--parchd); margin-bottom: 1rem; }
+
+/* Tanrılar grid */
+.gods-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1px; background: var(--border); margin-bottom: 2rem; }
+.gods-side-title { font-family: 'IM Fell English', serif; font-size: .78rem; letter-spacing: .1em; color: var(--goldd); font-style: italic; margin-bottom: 1rem; text-transform: uppercase; }
+.gods-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+@media (max-width: 640px) { .gods-cols { grid-template-columns: 1fr; } }
+.god-item { padding: .6rem 0; border-bottom: 1px solid rgba(61,42,20,.35); }
+.god-name { font-family: 'IM Fell English', serif; font-size: .92rem; color: var(--parchl); margin-bottom: .15rem; }
+.god-domain { font-size: .78rem; color: var(--parchd); font-style: italic; }
+.god-neutral { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<section id="lore-sec">
+  <div class="page-hero">
+    <p class="page-hero-eye">Stallhart Destanı · Cilt I</p>
+    <h1 class="page-hero-title" id="page-title">Evren Ansiklopedisi</h1>
+    <p class="page-hero-sub" id="page-sub">Stallhart İmparatorluğu'nun tarihi, inançları, sihri ve sözlüğü.</p>
+  </div>
+
+  <div class="inn" style="padding: 2.5rem 2rem 6rem;">
+    <div class="tabs tabs-wrap" id="lore-tabs">
+      <button class="tab-b on" id="tb-cog">Coğrafya &amp; Dünya</button>
+      <button class="tab-b" id="tb-din">Din &amp; İnanç</button>
+      <button class="tab-b" id="tb-tarih">Tarih</button>
+      <button class="tab-b" id="tb-soz">Sözlük</button>
+    </div>
+
+    <!-- ── COĞRAFYA TAB ───────────────────────── -->
+    <div class="tab-p on" id="tab-cog">
+      <div class="lore-cards-grid">
+        <div class="lc"><h3>Stallhart İmparatorluğu</h3><p>Gümüş Yol Boğazı ile ikiye ayrılan kıtanın büyük bölümüne hükmeden Stallhart İmparatorluğu, onlarca eyaleti bünyesinde barındırır. Başkent Başsancak topraklarında yer alır; tüm saray ve yönetim yapıları burada yoğunlaşmıştır.</p></div>
+        <div class="lc"><h3>Gümüş Yol Boğazı</h3><p>Kıtanın en stratejik su yolu. Kuzeyde Garall (Z'ela) ile güneyde Todfa ve Gom Ara arasında uzanan bu boğaz, doğu-batı ticaretini ve askerî hareketliliği belirler. Her iki yakasında da köklü liman kentleri gelişmiştir.</p></div>
+        <div class="lc"><h3>Kuzey Eyaletleri</h3><p>Galetsha ve Memanth, imparatorluğun sert kuzey sınırlarını oluştururlar. Sarp dağlar, yoğun ormanlar ve geçit vermez vadilerle dolu bu topraklar askerî stratejinin merkezindedir. Kuzeyden gelebilecek tehditler için tampon bölge işlevi görür.</p></div>
+        <div class="lc"><h3>Adalar &amp; Güney</h3><p>Selya, Khasinya ve Pilkard adaları deniz gücünün temelidir. Selya stratejik konumuyla öne çıkar; bilge Celios Selya'nın yönetiminde yarı özerk bir yapı sürdürür. Khasinya güçlü deniz kültürü ve isyan tarihiyle bilinir.</p></div>
+        <div class="lc"><h3>Arathen Krallığı</h3><p>Doğu komşusu. Stallhart'ın Kutsal Kan Doktrini'ni küfür olarak reddeder. Yıllar içinde istihbarat ağı, suikast operasyonları ve sihirle güçlendirilmiş savaş topu geliştirme yoluyla imparatorluğu içten çökertmeyi planlar.</p></div>
+        <div class="lc"><h3>Zelaina Elfin İmparatorluğu</h3><p>Batı komşusu. Binyıllardan beri seçimle yönetilen bu antik imparatorluk, Stallhart'ın hanedan yönetimi anlayışına soğuk bakar. Elflerin uzun ömürlülüğü ve birikimli bilgesi onları tehlikeli diplomasi ortakları kılar.</p></div>
+        <div class="lc"><h3>Garchar</h3><p>Büyük güçlerin oyuncağına dönmüş küçük devlet. Hem Stallhart hem Arathen hem de Zelaina'nın nüfuz mücadelesinde tampon bölge konumundadır. İç istikrarsızlığı onu sürekli dış müdahaleye açık bırakır.</p></div>
+        <div class="lc"><h3>Solgar Eyaleti</h3><p>Güneydoğu eyaleti. Başvezir Edun Solgar'ın vatanı; Zeandor tarafından sürgün bölgesi olarak belirlendi. Bereketli ama siyasi açıdan hassas topraklar. Solgar Hanesi'nin nüfuzu burada en yoğun biçimde hissedilir.</p></div>
+      </div>
+    </div>
+
+    <!-- ── DİN TAB ──────────────────────────────── -->
+    <div class="tab-p" id="tab-din">
+      <!-- Denge Konseyi -->
+      <div class="lc sp" style="margin-bottom:1.5rem;">
+        <h3>Denge Konseyi İnancı</h3>
+        <p>İmparatorluğun resmî dini. Kaos ve Düzen tanrıları arasındaki denge ilkesine dayanır. Tarafsız tanrı Galdra, tüm inançların üzerinde tutulur. Büyük tapınaklar her iki panteona da eş yer ayırır.</p>
+      </div>
+      <div class="gods-cols" style="margin-bottom:2rem;">
+        <div>
+          <div class="gods-side-title">Kaos Tanrıları</div>
+          <div id="gods-chaos"></div>
+        </div>
+        <div>
+          <div class="gods-side-title">Düzen Tanrıları</div>
+          <div id="gods-order"></div>
+        </div>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <div class="gods-side-title god-neutral">Tarafsız — Galdra</div>
+        <div id="gods-neutral"></div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin:2rem 0;"></div>
+
+      <!-- İlk Anne -->
+      <div class="lc" style="margin-bottom:1.5rem;">
+        <h3>İlk Anne İnancı (Yasak)</h3>
+        <p>İmparatorluktan önceki kadim inanç sistemi. Üç Yapraklı Yonca sembolüyle tanınır. İnananlara göre hiçbir insan diğerinden daha kutsal değildir — bu fikir Stallhart'ın Kutsal Kan Doktriniyle doğrudan çatışır ve bu yüzden yüzyıllar önce yasaklandı. Madenlerde, ninnilerde ve gizli el yazmalarında yaşamaya devam eder.</p>
+      </div>
+      <div class="lc">
+        <h3>Kutsal Kan Doktrini</h3>
+        <p>Kurucu I. Craes Stallhart, esaretten döndükten sonra ilan etti: Stallhart soyu tanrısal bir kandan gelmektedir ve bu soy ilahi bir yönetme hakkına sahiptir. Arathen Krallığı bu iddiayı küfür olarak reddeder. Doktrin hem hanedanın meşruiyet temelidir hem de muhalefete karşı en güçlü silahıdır.</p>
+      </div>
+    </div>
+
+    <!-- ── TARİH TAB ────────────────────────────── -->
+    <div class="tab-p" id="tab-tarih">
+      <div class="tl-legend">
+        <div class="tl-leg-item"><div class="tl-leg-dot ruler"></div>Hükümdar</div>
+        <div class="tl-leg-item"><div class="tl-leg-dot war"></div>Savaş / Fetih</div>
+        <div class="tl-leg-item"><div class="tl-leg-dot crisis"></div>Kriz / Dönüm</div>
+        <div class="tl-leg-item"><div class="tl-leg-dot religious"></div>Dinî Olay</div>
+      </div>
+      <div class="tl-filters" id="tl-filters">
+        <button class="f-btn on" data-tlf="all" id="tlf-all">Tümü</button>
+        <button class="f-btn" data-tlf="ruler"    id="tlf-ruler">Hükümdar</button>
+        <button class="f-btn" data-tlf="war"      id="tlf-war">Savaş</button>
+        <button class="f-btn" data-tlf="crisis"   id="tlf-crisis">Kriz</button>
+        <button class="f-btn" data-tlf="religious" id="tlf-religious">Dinî</button>
+      </div>
+      <div class="timeline" id="timeline-wrap">
+        <div style="color:var(--parchd);font-style:italic;font-size:.88rem;">Yükleniyor…</div>
+      </div>
+    </div>
+
+    <!-- ── SÖZLÜK TAB ────────────────────────────── -->
+    <div class="tab-p" id="tab-soz">
+      <div class="gls-search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+        <input type="search" id="gls-search" placeholder="Terim ara…" autocomplete="off">
+      </div>
+      <div class="gls-types" id="gls-type-filters">
+        <button class="f-btn on" data-gt="all">Tümü</button>
+        <button class="f-btn" data-gt="geo">Coğrafya</button>
+        <button class="f-btn" data-gt="title">Unvan</button>
+        <button class="f-btn" data-gt="political">Siyasi</button>
+        <button class="f-btn" data-gt="military">Askerî</button>
+        <button class="f-btn" data-gt="religious">Dinî</button>
+        <button class="f-btn" data-gt="magic">Sihir</button>
+      </div>
+      <div class="gls-count" id="gls-count"></div>
+      <div class="gls-grid" id="gls-grid">
+        <div style="padding:1.5rem;color:var(--parchd);font-style:italic;font-size:.88rem;">Yükleniyor…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="assets/js/wiki.js"></script>
+<script>
+const { Lang, loadData, initWiki, injectNav, esc } = Wiki;
+
+injectNav('lore.html');
+
+let loreData   = null;
+let activeTlf  = 'all';
+let activeGt   = 'all';
+let glsQuery   = '';
+
+const GODS = {
+  chaos:   [
+    { name:'Nazeth',  domain:{ tr:'Yıkım',          en:'Destruction' } },
+    { name:'Naldor',  domain:{ tr:'Açlık & Kıtlık', en:'Famine' } },
+    { name:'Garator', domain:{ tr:'Savaş & Kan',     en:'War & Blood' } },
+    { name:'Lodvez',  domain:{ tr:'Hastalık',        en:'Disease' } },
+    { name:'Vazmer',  domain:{ tr:'Delilik',         en:'Madness' } },
+    { name:'Zetus',   domain:{ tr:'Gizem & Kaos',   en:'Mystery & Chaos' } },
+    { name:'Hardir',  domain:{ tr:'Yalan & Hile',    en:'Deceit' } }
+  ],
+  order: [
+    { name:'Gydor',   domain:{ tr:'Adalet',          en:'Justice' } },
+    { name:'Lidros',  domain:{ tr:'Bilgelik',         en:'Wisdom' } },
+    { name:'Lomera',  domain:{ tr:'Bereket',          en:'Abundance' } },
+    { name:'Veleris', domain:{ tr:'Koruma',           en:'Protection' } },
+    { name:'Brikon',  domain:{ tr:'Zafer',            en:'Victory' } },
+    { name:'Eanhar',  domain:{ tr:'Işık & Şifa',     en:'Light & Healing' } },
+    { name:'Raxes',   domain:{ tr:'Düzen & Yasa',    en:'Order & Law' } }
+  ],
+  neutral:[
+    { name:'Galdra',  domain:{ tr:'Tüm inançların üzerindedir — yaratıcı güç, denge ve başlangıç. Stallhart imparatorları tahta çıkışlarında Galdra\'ya adak sunar.', en:'Above all faiths — creative force, balance and origin. Stallhart emperors offer tribute to Galdra upon accession.' } }
+  ]
+};
+
+/* ── TANRILAR ─────────────────────────────────────── */
+function renderGods(l) {
+  const t = obj => Lang.t(obj);
+
+  ['chaos','order'].forEach(side => {
+    const el = document.getElementById('gods-' + (side === 'chaos' ? 'chaos' : 'order'));
+    if (!el) return;
+    el.innerHTML = GODS[side].map(g => `
+      <div class="god-item">
+        <div class="god-name">${esc(g.name)}</div>
+        <div class="god-domain">${esc(t(g.domain))}</div>
+      </div>
+    `).join('');
+  });
+
+  const neutral = document.getElementById('gods-neutral');
+  if (neutral) {
+    neutral.innerHTML = GODS.neutral.map(g => `
+      <div class="god-item" style="border-bottom:none;">
+        <div class="god-name" style="color:var(--gold)">${esc(g.name)}</div>
+        <div class="god-domain" style="color:var(--parchd)">${esc(t(g.domain))}</div>
+      </div>
+    `).join('');
+  }
+}
+
+/* ── TİMELİNE ─────────────────────────────────────── */
+function renderTimeline() {
+  if (!loreData) return;
+  const l = Lang.get();
+  const t = obj => Lang.t(obj);
+  const typeLabels = {
+    ruler:    l === 'tr' ? 'Hükümdar'  : 'Ruler',
+    war:      l === 'tr' ? 'Savaş'     : 'War',
+    crisis:   l === 'tr' ? 'Kriz'      : 'Crisis',
+    religious:l === 'tr' ? 'Dinî Olay' : 'Religious'
+  };
+
+  const filtered = loreData.events.filter(e =>
+    activeTlf === 'all' || e.type === activeTlf
+  );
+
+  document.getElementById('timeline-wrap').innerHTML = filtered.map(e => `
+    <div class="tl-item ${e.type}" id="${esc(e.id || '')}">
+      <div class="tl-ks">KS ${esc(e.ks)}</div>
+      <div>
+        <span class="tl-badge ${e.type}">${typeLabels[e.type] || e.type}</span>
+      </div>
+      <div class="tl-name">${esc(t(e.name))}</div>
+      <div class="tl-desc">${esc(t(e.desc))}</div>
+    </div>
+  `).join('');
+}
+
+/* ── SÖZLÜK ───────────────────────────────────────── */
+const typeNames = {
+  geo:       { tr:'Coğrafya',  en:'Geography' },
+  title:     { tr:'Unvan',     en:'Title' },
+  political: { tr:'Siyasi',    en:'Political' },
+  military:  { tr:'Askerî',    en:'Military' },
+  religious: { tr:'Dinî',      en:'Religious' },
+  magic:     { tr:'Sihir',     en:'Magic' }
+};
+
+function renderGlossary() {
+  if (!loreData) return;
+  const l = Lang.get();
+  const t = obj => Lang.t(obj);
+
+  const filtered = loreData.glossary.filter(g => {
+    if (activeGt !== 'all' && g.type !== activeGt) return false;
+    if (glsQuery) {
+      const q = glsQuery.toLowerCase();
+      if (!t(g.term).toLowerCase().includes(q) &&
+          !t(g.def).toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('gls-count').textContent =
+    `${filtered.length} / ${loreData.glossary.length} ${l === 'tr' ? 'terim' : 'terms'}`;
+
+  document.getElementById('gls-grid').innerHTML = filtered.map(g => `
+    <div class="gls-item" id="${esc(g.id)}">
+      <div class="gls-type-badge">${esc(Lang.t(typeNames[g.type] || { tr:g.type, en:g.type }))}</div>
+      <div class="gls-term">${esc(t(g.term))}</div>
+      <div class="gls-def">${esc(t(g.def))}</div>
+    </div>
+  `).join('');
+}
+
+/* ── TABS ─────────────────────────────────────────── */
+(function() {
+  const tabs = ['cog','din','tarih','soz'];
+  tabs.forEach(id => {
+    document.getElementById('tb-' + id).addEventListener('click', function() {
+      document.querySelectorAll('#lore-tabs .tab-b').forEach(b => b.classList.remove('on'));
+      document.querySelectorAll('.tab-p').forEach(p => p.classList.remove('on'));
+      this.classList.add('on');
+      document.getElementById('tab-' + id).classList.add('on');
+
+      /* Lazy render */
+      if (id === 'tarih')  renderTimeline();
+      if (id === 'soz')    renderGlossary();
+      if (id === 'din')    renderGods(Lang.get());
+    });
+  });
+})();
+
+/* ── TİMELİNE FİLTRELERİ ─────────────────────────── */
+document.getElementById('tl-filters').addEventListener('click', e => {
+  const btn = e.target.closest('[data-tlf]');
+  if (!btn) return;
+  document.querySelectorAll('[data-tlf]').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeTlf = btn.dataset.tlf;
+  renderTimeline();
+});
+
+/* ── SÖZLÜK TİP FİLTRELERİ ───────────────────────── */
+document.getElementById('gls-type-filters').addEventListener('click', e => {
+  const btn = e.target.closest('[data-gt]');
+  if (!btn) return;
+  document.querySelectorAll('[data-gt]').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeGt = btn.dataset.gt;
+  renderGlossary();
+});
+
+document.getElementById('gls-search').addEventListener('input', function() {
+  glsQuery = this.value.trim();
+  renderGlossary();
+});
+
+/* ── URL HASH → İLGİLİ TAB ───────────────────────── */
+function checkHash() {
+  if (!location.hash) return;
+  const id = location.hash.slice(1);
+  if (!loreData) return;
+  const inGlossary = loreData.glossary.some(g => g.id === id);
+  const inTimeline = loreData.events.some(e => e.id === id);
+  if (inGlossary) {
+    document.getElementById('tb-soz').click();
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'center' }), 100);
+  } else if (inTimeline) {
+    document.getElementById('tb-tarih').click();
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'center' }), 100);
+  }
+}
+
+/* ── DİL ─────────────────────────────────────────── */
+function applyLang(l) {
+  document.documentElement.lang = l;
+  document.getElementById('page-title').textContent = l === 'tr' ? 'Evren Ansiklopedisi' : 'World Encyclopedia';
+  document.getElementById('page-sub').textContent = l === 'tr'
+    ? 'Stallhart İmparatorluğu\'nun tarihi, inançları, sihri ve sözlüğü.'
+    : 'The history, faiths, magic and glossary of the Stallhart Empire.';
+
+  /* Tab etiketleri */
+  const tabLabels = {
+    'tb-cog':   { tr:'Coğrafya & Dünya', en:'Geography & World' },
+    'tb-din':   { tr:'Din & İnanç',      en:'Faith & Religion' },
+    'tb-tarih': { tr:'Tarih',            en:'History' },
+    'tb-soz':   { tr:'Sözlük',           en:'Glossary' }
+  };
+  Object.entries(tabLabels).forEach(([id, lbl]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = lbl[l];
+  });
+
+  /* Timeline filtre etiketleri */
+  const tlLabels = {
+    'tlf-all':      { tr:'Tümü', en:'All' },
+    'tlf-ruler':    { tr:'Hükümdar', en:'Ruler' },
+    'tlf-war':      { tr:'Savaş',    en:'War' },
+    'tlf-crisis':   { tr:'Kriz',     en:'Crisis' },
+    'tlf-religious':{ tr:'Dinî',     en:'Religious' }
+  };
+  Object.entries(tlLabels).forEach(([id, lbl]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = lbl[l];
+  });
+
+  /* Sözlük tip filtre etiketleri */
+  const gtMap = {
+    all: { tr:'Tümü', en:'All' }, geo: { tr:'Coğrafya', en:'Geography' },
+    title: { tr:'Unvan', en:'Title' }, political: { tr:'Siyasi', en:'Political' },
+    military: { tr:'Askerî', en:'Military' },
+    religious: { tr:'Dinî', en:'Religious' }, magic: { tr:'Sihir', en:'Magic' }
+  };
+  document.querySelectorAll('[data-gt]').forEach(btn => {
+    const key = btn.dataset.gt;
+    if (gtMap[key]) btn.textContent = gtMap[key][l];
+  });
+
+  document.getElementById('gls-search').placeholder = l === 'tr' ? 'Terim ara…' : 'Search terms…';
+
+  /* Aktif tab'ı yenile */
+  const activeTab = document.querySelector('.tab-p.on')?.id?.replace('tab-','');
+  if (activeTab === 'tarih')  renderTimeline();
+  if (activeTab === 'soz')    renderGlossary();
+  if (activeTab === 'din')    renderGods(l);
+}
+
+/* ── BAŞLAT ───────────────────────────────────────── */
+async function init() {
+  loreData = await loadData('lore.json');
+  renderGods(Lang.get());
+  checkHash();
+}
+
+injectNav('lore.html');
+initWiki({ onLangChange: applyLang });
+init();
+</script>
+</body>
+</html>

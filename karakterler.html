@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stallhart Destanı — Karakter Rehberi">
+<title>Karakterler · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+#karakterler-sec { background: var(--bg); padding-top: 2rem; }
+
+/* Arama + filtre çubuğu */
+.char-toolbar {
+  display: flex; gap: .75rem; flex-wrap: wrap;
+  align-items: center; margin-bottom: 2rem;
+}
+.char-search-wrap {
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: .4rem 1rem; flex: 1; min-width: 200px; max-width: 360px;
+}
+.char-search-wrap svg {
+  width: 14px; height: 14px; flex-shrink: 0;
+  stroke: var(--goldd); fill: none; stroke-width: 1.8; stroke-linecap: round;
+}
+#char-search {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: 'IM Fell English', serif; font-size: .88rem;
+  color: var(--parchl); caret-color: var(--gold);
+}
+#char-search::placeholder { color: var(--parchd); }
+
+.filter-sep {
+  width: 1px; height: 20px; background: var(--border); flex-shrink: 0;
+}
+
+/* Karakter sayacı */
+.char-count {
+  margin-left: auto;
+  font-family: 'IM Fell English', serif; font-style: italic;
+  font-size: .78rem; color: var(--parchd);
+}
+
+/* Boş durum */
+.chars-empty {
+  grid-column: 1/-1; text-align: center;
+  padding: 3rem; font-style: italic; color: var(--parchd); font-size: .9rem;
+}
+
+/* Durum rozeti */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .68rem; font-family: 'IM Fell English', serif; font-style: italic;
+  padding: 2px 7px; border: 1px solid;
+}
+.status-badge.alive      { color: var(--goldd);  border-color: var(--goldd); }
+.status-badge.deceased   { color: var(--bloodb); border-color: var(--bloodb); }
+.status-badge.historical { color: var(--parchd); border-color: var(--border); }
+
+/* Yer imi düğmesi */
+.cc-bookmark {
+  position: absolute; bottom: 1rem; right: 1rem;
+  background: none; border: 1px solid var(--border);
+  color: var(--parchd); font-size: .7rem; padding: 2px 6px;
+  cursor: pointer; transition: .15s; font-family: 'IM Fell English', serif;
+  font-style: italic; z-index: 1;
+}
+.cc-bookmark:hover     { border-color: var(--goldd); color: var(--gold); }
+.cc-bookmark.bookmarked { border-color: var(--goldd); color: var(--gold); background: rgba(196,150,42,.08); }
+
+/* Sadece yer imleri butonu */
+.f-btn.bookmarks-only.on { border-color: var(--goldd); color: var(--goldd); }
+
+/* Modal ilişkiler */
+.modal-rels { margin-top: 1.25rem; }
+.modal-rels-title {
+  font-family: 'IM Fell English', serif; font-style: italic;
+  font-size: .78rem; color: var(--goldd); margin-bottom: .6rem;
+}
+.modal-rels-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+.modal-rel-tag {
+  font-size: .75rem; padding: 3px 10px;
+  border: 1px solid var(--border); color: var(--parchd);
+  cursor: pointer; transition: .15s; text-decoration: none;
+  font-family: 'IM Fell English', serif; font-style: italic;
+}
+.modal-rel-tag:hover { border-color: var(--goldd); color: var(--parchl); }
+.modal-rel-tag.enemy { border-color: var(--blood); color: var(--bloodb); }
+</style>
+</head>
+<body>
+
+<section id="karakterler-sec">
+  <div class="page-hero">
+    <p class="page-hero-eye">Stallhart Destanı · Cilt I</p>
+    <h1 class="page-hero-title" id="page-title">Karakter Rehberi</h1>
+    <p class="page-hero-sub" id="page-sub">İmparatorluğun tüm önemli isimleri — hanedanlar, isyancılar, düşmanlar.</p>
+  </div>
+
+  <div class="inn" style="padding: 2.5rem 2rem 6rem;">
+    <!-- Araç çubuğu -->
+    <div class="char-toolbar">
+      <!-- Yazı araması -->
+      <div class="char-search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+        <input type="search" id="char-search" placeholder="İsim ara…" autocomplete="off">
+      </div>
+
+      <div class="filter-sep"></div>
+
+      <!-- Hane filtreleri -->
+      <span class="fb-label" id="lbl-filter">Hane:</span>
+      <button class="f-btn on" data-group="all" id="f-all">Tümü</button>
+      <button class="f-btn" data-group="stallhart" id="f-stallhart">İmparatorluk</button>
+      <button class="f-btn" data-group="arhan"     id="f-arhan">Arhan</button>
+      <button class="f-btn" data-group="solgar"    id="f-solgar">Solgar</button>
+      <button class="f-btn" data-group="selya"     id="f-selya">Selya</button>
+      <button class="f-btn" data-group="rebel"     id="f-rebel">İsyancılar</button>
+      <button class="f-btn" data-group="arathen"   id="f-arathen">Arathen</button>
+
+      <div class="filter-sep"></div>
+
+      <!-- Durum filtresi -->
+      <button class="f-btn" data-status="alive"      id="f-alive">Yaşıyor</button>
+      <button class="f-btn" data-status="deceased"   id="f-deceased">Ölü</button>
+      <button class="f-btn" data-status="historical" id="f-historical">Tarihsel</button>
+
+      <div class="filter-sep"></div>
+
+      <!-- Yer imleri -->
+      <button class="f-btn bookmarks-only" id="f-bookmarks">☆ Yer İmleri</button>
+
+      <span class="char-count" id="char-count"></span>
+    </div>
+
+    <!-- Karakter ızgarası -->
+    <div class="cg" id="char-grid">
+      <div style="color:var(--parchd);font-style:italic;font-size:.88rem;padding:1rem 0;">Yükleniyor…</div>
+    </div>
+  </div>
+</section>
+
+<!-- Karakter Detay Modali -->
+<div class="modal-overlay" id="char-modal" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+  <div class="modal" id="modal-inner">
+    <button class="modal-close" id="modal-close" aria-label="Kapat">✕</button>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script src="assets/js/wiki.js"></script>
+<script>
+const { Lang, loadData, initWiki, injectNav, groupClass, Bookmarks, esc } = Wiki;
+
+injectNav('karakterler.html');
+
+let allChars = [];
+let activeGroup  = 'all';
+let activeStatus = 'all';
+let bookmarksOnly = false;
+let searchQuery  = '';
+let charMap = {}; /* id → char */
+
+/* ── VERİ YÜKLENDİ ────────────────────────────────── */
+async function init() {
+  const data = await loadData('characters.json');
+  allChars = data.characters;
+  allChars.forEach(c => charMap[c.id] = c);
+  render();
+  applyLang(Lang.get());
+}
+
+/* ── RENDER ───────────────────────────────────────── */
+function render() {
+  const l   = Lang.get();
+  const t   = obj => Lang.t(obj);
+  const bms = Bookmarks.get();
+
+  const filtered = allChars.filter(c => {
+    if (bookmarksOnly && !bms.includes(c.id)) return false;
+    if (activeGroup  !== 'all' && c.group !== activeGroup)  return false;
+    if (activeStatus !== 'all' && c.status !== activeStatus) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (!t(c.name).toLowerCase().includes(q) &&
+          !t(c.house).toLowerCase().includes(q) &&
+          !t(c.title).toLowerCase().includes(q) &&
+          !t(c.bio).toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
+  /* Sayaç */
+  document.getElementById('char-count').textContent =
+    `${filtered.length} / ${allChars.length} ${l === 'tr' ? 'karakter' : 'characters'}`;
+
+  if (filtered.length === 0) {
+    document.getElementById('char-grid').innerHTML =
+      `<div class="chars-empty">${l === 'tr' ? 'Sonuç bulunamadı.' : 'No results found.'}</div>`;
+    return;
+  }
+
+  document.getElementById('char-grid').innerHTML = filtered.map(c => {
+    const isBookmarked = bms.includes(c.id);
+    const bio = t(c.bio);
+    return `
+      <div class="cc ${groupClass(c.group)}" title="${esc(t(c.name))}"
+           data-id="${c.id}" role="article"
+           style="cursor:pointer; padding-bottom:3rem;">
+        <div class="cc-dot ${c.status}"></div>
+        <p class="cc-house">${esc(t(c.house))}</p>
+        <h3 class="cc-name">${esc(t(c.name))}</h3>
+        <p class="cc-role">${esc(t(c.title))}</p>
+        <p class="cc-desc">${esc(bio.substring(0, 130))}${bio.length > 130 ? '…' : ''}</p>
+        ${t(c.epi) ? `<span class="cc-epi">${esc(t(c.epi))}</span>` : ''}
+        <button class="cc-bookmark ${isBookmarked ? 'bookmarked' : ''}"
+                data-bm="${c.id}"
+                aria-label="${isBookmarked ? 'Yer imini kaldır' : 'Yer imi ekle'}">
+          ${isBookmarked ? '★' : '☆'}
+        </button>
+      </div>`;
+  }).join('');
+
+  /* Olay dinleyicileri */
+  document.querySelectorAll('.cc[data-id]').forEach(el => {
+    el.addEventListener('click', e => {
+      if (e.target.closest('.cc-bookmark')) return;
+      window.location.href = 'karakter-sablon.html?id=' + el.dataset.id;
+    });
+  });
+
+  document.querySelectorAll('.cc-bookmark').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.bm;
+      const added = Bookmarks.toggle(id);
+      btn.textContent = added ? '★' : '☆';
+      btn.classList.toggle('bookmarked', added);
+      if (bookmarksOnly) render();
+    });
+  });
+
+  /* URL hash → modal aç */
+  if (location.hash) {
+    const id = location.hash.slice(1);
+    if (charMap[id]) openModal(id);
+  }
+}
+
+/* ── MODAL ─────────────────────────────────────────── */
+function openModal(id) {
+  const c = charMap[id];
+  if (!c) return;
+  const l = Lang.get();
+  const t = obj => Lang.t(obj);
+  history.replaceState(null, '', `#${id}`);
+
+  const statusLabel = {
+    alive:      l === 'tr' ? 'Yaşıyor' : 'Alive',
+    deceased:   l === 'tr' ? 'Hayatını Kaybetti' : 'Deceased',
+    historical: l === 'tr' ? 'Tarihsel' : 'Historical'
+  }[c.status] || c.status;
+
+  /* İlişkiler */
+  const allyTags = (c.allies || []).map(aid => {
+    const ac = charMap[aid];
+    return ac
+      ? `<span class="modal-rel-tag" data-open="${aid}">${esc(t(ac.name))}</span>`
+      : `<span class="modal-rel-tag">${esc(aid)}</span>`;
+  }).join('');
+  const enemyTags = (c.enemies || []).map(eid => {
+    const ec = charMap[eid];
+    return ec
+      ? `<span class="modal-rel-tag enemy" data-open="${eid}">${esc(t(ec.name))}</span>`
+      : `<span class="modal-rel-tag enemy">${esc(eid)}</span>`;
+  }).join('');
+
+  document.getElementById('modal-body').innerHTML = `
+    <p class="modal-house ${groupClass(c.group)}" style="font-family:'IM Fell English',serif;font-style:italic;font-size:.78rem;letter-spacing:.1em;margin-bottom:.4rem;color:var(--c-${groupClass(c.group)},var(--goldd))">
+      ${esc(t(c.house))}
+    </p>
+    <h2 class="modal-name" id="modal-name">${esc(t(c.name))}</h2>
+    <p class="modal-title">${esc(t(c.title))}</p>
+
+    ${t(c.quote) ? `<blockquote class="modal-quote">"${esc(t(c.quote))}"</blockquote>` : ''}
+
+    <p class="modal-bio">${esc(t(c.bio))}</p>
+
+    <dl class="modal-meta">
+      <dt>${l === 'tr' ? 'Durum' : 'Status'}</dt>
+      <dd><span class="status-badge ${c.status}">${statusLabel}</span></dd>
+      ${c.birth?.tr || c.birth?.en
+        ? `<dt>${l === 'tr' ? 'Doğum Yeri' : 'Birthplace'}</dt>
+           <dd>${esc(t(c.birth))}</dd>` : ''}
+      ${c.alleg?.tr || c.alleg?.en
+        ? `<dt>${l === 'tr' ? 'Bağlılık' : 'Allegiance'}</dt>
+           <dd>${esc(t(c.alleg))}</dd>` : ''}
+      ${c.chapters?.length
+        ? `<dt>${l === 'tr' ? 'Bölümler' : 'Chapters'}</dt>
+           <dd>${c.chapters.map(ch => esc(ch)).join(', ')}</dd>` : ''}
+    </dl>
+
+    ${allyTags ? `
+      <div class="modal-rels">
+        <div class="modal-rels-title">${l === 'tr' ? '↑ Müttefikler' : '↑ Allies'}</div>
+        <div class="modal-rels-list">${allyTags}</div>
+      </div>` : ''}
+    ${enemyTags ? `
+      <div class="modal-rels">
+        <div class="modal-rels-title">${l === 'tr' ? '↓ Düşmanlar / Rakipler' : '↓ Enemies / Rivals'}</div>
+        <div class="modal-rels-list">${enemyTags}</div>
+      </div>` : ''}
+
+    ${t(c.epi) ? `<div class="modal-epi">${esc(t(c.epi))}</div>` : ''}
+  `;
+
+  /* İlişki etiketlerine tıklama */
+  document.querySelectorAll('[data-open]').forEach(el => {
+    el.addEventListener('click', () => openModal(el.dataset.open));
+  });
+
+  document.getElementById('char-modal').classList.add('open');
+  document.getElementById('modal-close').focus();
+}
+
+function closeModal() {
+  document.getElementById('char-modal').classList.remove('open');
+  history.replaceState(null, '', location.pathname);
+}
+
+/* ── FİLTRE KONTROLLER ──────────────────────────────── */
+document.querySelectorAll('[data-group]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-group]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    activeGroup = btn.dataset.group;
+    render();
+  });
+});
+
+document.querySelectorAll('[data-status]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (activeStatus === btn.dataset.status) {
+      btn.classList.remove('on');
+      activeStatus = 'all';
+    } else {
+      document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      activeStatus = btn.dataset.status;
+    }
+    render();
+  });
+});
+
+document.getElementById('f-bookmarks').addEventListener('click', function() {
+  bookmarksOnly = !bookmarksOnly;
+  this.classList.toggle('on', bookmarksOnly);
+  render();
+});
+
+document.getElementById('char-search').addEventListener('input', function() {
+  searchQuery = this.value.trim();
+  render();
+});
+
+/* ── MODAL KAPATMA ──────────────────────────────────── */
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('char-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('char-modal')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ── DİL ─────────────────────────────────────────────── */
+function applyLang(l) {
+  document.documentElement.lang = l;
+  document.getElementById('page-title').textContent =
+    l === 'tr' ? 'Karakter Rehberi' : 'Character Guide';
+  document.getElementById('page-sub').textContent =
+    l === 'tr' ? 'İmparatorluğun tüm önemli isimleri — hanedanlar, isyancılar, düşmanlar.'
+                : 'All major figures of the empire — dynasties, rebels, enemies.';
+  document.getElementById('lbl-filter').textContent = l === 'tr' ? 'Hane:' : 'House:';
+  document.getElementById('char-search').placeholder = l === 'tr' ? 'İsim ara…' : 'Search name…';
+
+  /* Filtre etiketleri */
+  const labels = {
+    'f-all':'tr:Tümü|en:All', 'f-stallhart':'tr:İmparatorluk|en:Imperial',
+    'f-arhan':'tr:Arhan|en:Arhan', 'f-solgar':'tr:Solgar|en:Solgar',
+    'f-selya':'tr:Selya|en:Selya', 'f-rebel':'tr:İsyancılar|en:Rebels',
+    'f-arathen':'tr:Arathen|en:Arathen',
+    'f-alive':'tr:Yaşıyor|en:Alive', 'f-deceased':'tr:Ölü|en:Deceased',
+    'f-historical':'tr:Tarihsel|en:Historical',
+    'f-bookmarks':'tr:☆ Yer İmleri|en:☆ Bookmarks'
+  };
+  Object.entries(labels).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val.split('|').find(v => v.startsWith(l+':')).slice(3);
+  });
+
+  render();
+}
+
+initWiki({ onLangChange: applyLang });
+init();
+</script>
+</body>
+</html>

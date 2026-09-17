@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Karakter · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+body{background:var(--bg)}
+.wiki-layout{max-width:1100px;margin:0 auto;padding:6rem 2rem 4rem;display:grid;grid-template-columns:1fr 300px;gap:2.5rem;align-items:start}
+@media(max-width:800px){.wiki-layout{grid-template-columns:1fr;padding:5rem 1.25rem 3rem}}
+
+/* Breadcrumb */
+.breadcrumb{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--parchd);margin-bottom:1.5rem;font-family:'IM Fell English',serif;font-style:italic;flex-wrap:wrap}
+.breadcrumb a{color:var(--goldd);text-decoration:none;transition:color .15s}
+.breadcrumb a:hover{color:var(--gold)}
+.breadcrumb span{color:var(--border)}
+
+/* Article */
+.art-eyebrow{font-family:'IM Fell English',serif;font-style:italic;font-size:.7rem;letter-spacing:.15em;color:var(--goldd);margin-bottom:.4rem;text-transform:uppercase}
+.art-title{font-family:'IM Fell English',serif;font-size:clamp(1.8rem,3vw,2.6rem);color:var(--parchl);line-height:1.15;margin-bottom:.25rem}
+.art-subtitle{font-size:.9rem;color:var(--gold);font-style:italic;margin-bottom:.85rem}
+.art-tags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1.25rem}
+.art-tag{font-family:'IM Fell English',serif;font-size:.68rem;padding:.18rem .55rem;border:1px solid var(--border);color:var(--parchd);font-style:italic;text-decoration:none;transition:.15s}
+.art-tag:hover{border-color:var(--goldd);color:var(--parchl)}
+.art-tag.major{border-color:var(--goldd);color:var(--goldd)}
+.art-tag.danger{border-color:var(--bloodb);color:var(--bloodb)}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);padding:.9rem 1.1rem;margin-bottom:1.5rem}
+.toc-title{font-family:'IM Fell English',serif;font-size:.75rem;color:var(--goldd);margin-bottom:.5rem;font-style:italic;letter-spacing:.06em}
+.toc-list{list-style:none;display:flex;flex-direction:column;gap:.2rem}
+.toc-list a{font-family:'IM Fell English',serif;font-size:.78rem;color:var(--goldd);text-decoration:none;transition:color .15s}
+.toc-list a:hover{color:var(--gold)}
+.toc-list .sub{padding-left:.9rem}
+.toc-list .sub a{font-size:.72rem;color:var(--parchd)}
+
+/* Body prose */
+.art-sec-head{font-family:'IM Fell English',serif;font-size:1.1rem;color:var(--parchl);padding-bottom:.4rem;border-bottom:1px solid var(--border);margin:1.75rem 0 .85rem}
+.art-p{font-size:.9rem;color:var(--parchd);line-height:1.85;margin-bottom:.85rem}
+.art-p a{color:var(--goldd);text-decoration:none;border-bottom:1px dashed var(--border);transition:.15s}
+.art-p a:hover{color:var(--gold);border-bottom-color:var(--goldd)}
+.art-quote{border-left:2px solid var(--goldd);padding:.6rem 1rem;margin:1rem 0;font-style:italic;font-size:.88rem;color:var(--parchd)}
+.art-quote cite{display:block;font-size:.75rem;color:var(--border);margin-top:.35rem;font-style:normal}
+
+/* Image placeholder / actual image */
+.char-image-wrap{width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--surface),var(--deep));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:.85rem;overflow:hidden;position:relative}
+.char-image-wrap img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.char-img-placeholder{font-size:4rem;opacity:.18}
+
+/* Infobox */
+.infobox{background:var(--surface);border:1px solid var(--border);overflow:hidden;position:sticky;top:70px}
+.ib-head{background:linear-gradient(135deg,rgba(196,150,42,.12),rgba(196,150,42,.04));padding:.9rem 1.1rem;border-bottom:1px solid var(--border)}
+.ib-house{font-family:'IM Fell English',serif;font-style:italic;font-size:.68rem;letter-spacing:.1em;margin-bottom:.2rem}
+.ib-name{font-family:'IM Fell English',serif;font-size:1.1rem;color:var(--parchl);line-height:1.2}
+.ib-role{font-size:.75rem;color:var(--gold);font-style:italic}
+.ib-rows{padding:.6rem 1.1rem .9rem}
+.ib-row{display:flex;gap:.75rem;padding:.3rem 0;border-bottom:1px solid rgba(61,42,20,.25)}
+.ib-row:last-child{border-bottom:none}
+.ib-key{font-family:'IM Fell English',serif;font-size:.68rem;color:var(--goldd);font-style:italic;width:80px;flex-shrink:0;padding-top:.05rem}
+.ib-val{font-size:.78rem;color:var(--parch);line-height:1.5;flex:1}
+.ib-val a{color:var(--goldd);text-decoration:none}
+.ib-val a:hover{color:var(--gold)}
+.ib-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.ib-dot.alive{background:var(--gold)}
+.ib-dot.deceased{background:var(--blood)}
+.ib-dot.historical{background:var(--border)}
+
+/* Related articles */
+.related-sec{margin-top:1.25rem;border-top:1px solid var(--border);padding-top:1rem}
+.related-title{font-family:'IM Fell English',serif;font-size:.72rem;color:var(--goldd);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem}
+.related-list{display:flex;flex-direction:column;gap:.3rem}
+.related-item{display:flex;align-items:flex-start;gap:.5rem;padding:.35rem .5rem;border:1px solid var(--border);text-decoration:none;transition:background .15s}
+.related-item:hover{background:rgba(196,150,42,.05);border-color:var(--goldd)}
+.ri-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:.35rem}
+.ri-name{font-family:'IM Fell English',serif;font-size:.78rem;color:var(--parchl)}
+.ri-role{font-size:.68rem;color:var(--parchd);font-style:italic}
+
+/* Category footer */
+.art-cats{border-top:1px solid var(--border);padding-top:.85rem;margin-top:1.75rem}
+.cats-label{font-family:'IM Fell English',serif;font-size:.68rem;color:var(--parchd);margin-bottom:.5rem;font-style:italic}
+
+/* Not found */
+.not-found{text-align:center;padding:5rem 2rem;font-family:'IM Fell English',serif;font-style:italic;color:var(--parchd)}
+.not-found h2{font-size:1.5rem;color:var(--parchl);margin-bottom:.75rem}
+.not-found a{color:var(--gold)}
+
+/* Harita linki */
+.map-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;color:var(--goldd);text-decoration:none;border:1px solid var(--border);padding:.2rem .6rem;transition:.15s;margin-top:.5rem}
+.map-badge:hover{border-color:var(--goldd);color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div id="wiki-root" style="margin-top:54px">
+  <div class="wiki-layout" id="content">
+    <div style="color:var(--parchd);font-style:italic">Yükleniyor…</div>
+    <div></div>
+  </div>
+</div>
+
+<script src="assets/js/wiki.js"></script>
+<script>
+const{Lang,loadData,initWiki,injectNav,groupClass,Bookmarks,esc}=Wiki;
+injectNav();
+
+let allChars={}, charData=null;
+const EYALET_MAP={stallhart:'highsanjak',arhan:'galetsha',solgar:'solgar',selya:'shelia',rebel:'',court:'highsanjak',arathen:'arathen',other:''};
+
+/* URL'den ID al */
+function getCharId(){
+  const params=new URLSearchParams(location.search);
+  return params.get('id')||location.hash.slice(1)||null;
+}
+
+async function init(){
+  charData=await loadData('characters.json');
+  charData.characters.forEach(c=>{allChars[c.id]=c;});
+  render();
+}
+
+function render(){
+  const l=Lang.get(),t=o=>Lang.t(o);
+  const id=getCharId();
+
+  if(!id||!allChars[id]){
+    document.getElementById('content').innerHTML=`
+      <div class="not-found" style="grid-column:1/-1">
+        <h2>${l==='tr'?'Karakter Bulunamadı':'Character Not Found'}</h2>
+        <p>${l==='tr'?'Aradığın karakter mevcut değil.':'The character you are looking for does not exist.'}</p>
+        <br><a href="karakterler.html">← ${l==='tr'?'Tüm Karakterler':'All Characters'}</a>
+      </div>
+      <div></div>`;
+    document.title='404 · Stallhart Wiki';
+    return;
+  }
+
+  const c=allChars[id];
+  document.title=`${t(c.name)} · Stallhart Wiki`;
+  document.documentElement.lang=l;
+
+  /* İlgili karakterler */
+  const relatedIds=[...(c.allies||[]),...(c.enemies||[])].slice(0,6);
+  const relatedHTML=relatedIds.map(rid=>{
+    const rc=allChars[rid];
+    if(!rc)return'';
+    const isEnemy=(c.enemies||[]).includes(rid);
+    return`<a class="related-item" href="karakter-sablon.html?id=${rid}">
+      <div class="ri-dot" style="background:${isEnemy?'var(--bloodb)':'var(--goldd)'}"></div>
+      <div><div class="ri-name">${esc(t(rc.name))}</div><div class="ri-role">${esc(t(rc.title)||t(rc.house))}</div></div>
+    </a>`;
+  }).join('');
+
+  /* Yer imi */
+  const isBookmarked=Bookmarks.has(id);
+
+  /* Harita linki */
+  const mapId=EYALET_MAP[c.group||''];
+  const mapLink=mapId?`<br><a class="map-badge" href="harita.html#${mapId}">🗺 ${l==='tr'?'Haritada gör':'See on map'}</a>`:'';
+
+  /* İnfobox satırları */
+  const rows=[
+    {k:l==='tr'?'Durum':'Status',  v:`<span class="ib-dot ${c.status}"></span>${{alive:{tr:'Yaşıyor',en:'Alive'},deceased:{tr:'Hayatını Kaybetti',en:'Deceased'},historical:{tr:'Tarihsel',en:'Historical'}}[c.status]?.[l]||c.status}`},
+    {k:l==='tr'?'Hane':'House',    v:esc(t(c.house))},
+    {k:l==='tr'?'Unvan':'Title',   v:esc(t(c.title))},
+    {k:l==='tr'?'Doğum':'Birth',   v:esc(t(c.birth||{tr:'-',en:'-'}))},
+    {k:l==='tr'?'Bağlılık':'Allegiance', v:esc(t(c.alleg||{tr:'-',en:'-'}))},
+    c.chapters?.length?{k:l==='tr'?'Bölümler':'Chapters',v:c.chapters.map(ch=>`<a href="bolumler.html">${esc(ch)}</a>`).join(', ')}:null
+  ].filter(Boolean);
+
+  /* Ana içerik */
+  const mainHTML=`
+    <div>
+      <nav class="breadcrumb">
+        <a href="index.html">${l==='tr'?'Ana Sayfa':'Home'}</a><span>›</span>
+        <a href="karakterler.html">${l==='tr'?'Karakterler':'Characters'}</a><span>›</span>
+        <a href="haneler.html">${esc(t(c.house))}</a><span>›</span>
+        <strong style="color:var(--parchl)">${esc(t(c.name))}</strong>
+      </nav>
+
+      <div class="art-eyebrow">${l==='tr'?'Karakter Maddesi':'Character Article'}</div>
+      <h1 class="art-title">${esc(t(c.name))}</h1>
+      <p class="art-subtitle">${esc(t(c.title))}</p>
+
+      <div class="art-tags">
+        <a href="haneler.html" class="art-tag major">${esc(t(c.house))}</a>
+        <span class="art-tag ${c.group==='rebel'?'danger':''}">${{stallhart:'İmparatorluk',arhan:'Arhan',solgar:'Solgar',selya:'Selya',rebel:'İsyancı',court:'Saray',arathen:'Arathen',other:'Diğer'}[c.group]||c.group}</span>
+        ${(c.chapters||[]).map(ch=>`<span class="art-tag">${esc(ch)}</span>`).join('')}
+      </div>
+
+      <!-- TOC -->
+      <div class="toc">
+        <div class="toc-title">📜 ${l==='tr'?'İçindekiler':'Contents'}</div>
+        <ul class="toc-list">
+          ${t(c.quote)?`<li><a href="#soz">1. ${l==='tr'?'Tanımlayıcı Söz':'Defining Quote'}</a></li>`:''}
+          <li><a href="#biyografi">2. ${l==='tr'?'Biyografi':'Biography'}</a></li>
+          ${(c.allies||[]).length?`<li><a href="#muttefikler">3. ${l==='tr'?'Müttefikler':'Allies'}</a></li>`:''}
+          ${(c.enemies||[]).length?`<li><a href="#dusmanlar">4. ${l==='tr'?'Düşmanlar':'Enemies'}</a></li>`:''}
+          ${t(c.epi)?`<li><a href="#lakap">5. ${l==='tr'?'Lakap':'Epithet'}</a></li>`:''}
+        </ul>
+      </div>
+
+      <!-- Söz -->
+      ${t(c.quote)?`<div class="art-quote" id="soz">${esc(t(c.quote))}<cite>— ${esc(t(c.name))}</cite></div>`:''}
+
+      <!-- Biyografi -->
+      <h2 class="art-sec-head" id="biyografi">${l==='tr'?'Biyografi':'Biography'}</h2>
+      <p class="art-p">${esc(t(c.bio))}</p>
+
+      <!-- Müttefikler -->
+      ${(c.allies||[]).length?`
+      <h2 class="art-sec-head" id="muttefikler">${l==='tr'?'Müttefikler':'Allies'}</h2>
+      <p class="art-p">${c.allies.map(aid=>{const ac=allChars[aid];return ac?`<a href="karakter-sablon.html?id=${aid}">${esc(t(ac.name))}</a>`:esc(aid);}).join(' · ')}</p>`:''}
+
+      <!-- Düşmanlar -->
+      ${(c.enemies||[]).length?`
+      <h2 class="art-sec-head" id="dusmanlar">${l==='tr'?'Düşmanlar / Rakipler':'Enemies / Rivals'}</h2>
+      <p class="art-p">${c.enemies.map(eid=>{const ec=allChars[eid];return ec?`<a href="karakter-sablon.html?id=${eid}">${esc(t(ec.name))}</a>`:esc(eid);}).join(' · ')}</p>`:''}
+
+      <!-- Lakap -->
+      ${t(c.epi)?`
+      <h2 class="art-sec-head" id="lakap">${l==='tr'?'Lakap':'Epithet'}</h2>
+      <p class="art-p" style="font-style:italic;color:var(--bloodb)">"${esc(t(c.epi))}"</p>`:''}
+
+      <!-- Kategori -->
+      <div class="art-cats">
+        <div class="cats-label">🏷 ${l==='tr'?'Kategoriler':'Categories'}</div>
+        <div class="art-tags">
+          ${c.status==='alive'?`<span class="art-tag major">${l==='tr'?'Yaşayan Karakterler':'Living Characters'}</span>`:''}
+          ${c.status==='deceased'?`<span class="art-tag danger">${l==='tr'?'Hayatını Kaybedenler':'Deceased'}</span>`:''}
+          <span class="art-tag">${{stallhart:'Stallhart Hanedanı',arhan:'Arhan Hanesi',solgar:'Solgar Hanesi',selya:'Selya Hanesi',rebel:'İsyancılar',court:'Saray',arathen:'Arathen',other:'Diğer'}[c.group]||c.group}</span>
+          ${(c.chapters||[]).length?`<span class="art-tag">Cilt I</span>`:''}
+        </div>
+      </div>
+    </div>`;
+
+  /* Sidebar */
+  const sideHTML=`
+    <div>
+      <div class="infobox">
+        <div class="ib-head">
+          <div class="ib-house" style="color:var(--c-${groupClass(c.group)},var(--goldd))">${esc(t(c.house))}</div>
+          <div class="ib-name">${esc(t(c.name))}</div>
+          <div class="ib-role">${esc(t(c.title))}</div>
+        </div>
+        <div class="char-image-wrap">
+          ${c.image?`<img src="${esc(c.image)}" alt="${esc(t(c.name))}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`:''}
+          <div class="char-img-placeholder" style="display:${c.image?'none':'flex'}">👤</div>
+        </div>
+        <div class="ib-rows">
+          ${rows.map(r=>`<div class="ib-row"><span class="ib-key">${r.k}</span><span class="ib-val">${r.v}</span></div>`).join('')}
+        </div>
+      </div>
+      ${mapLink}
+
+      ${relatedHTML?`
+      <div class="related-sec">
+        <div class="related-title">${l==='tr'?'İlgili Karakterler':'Related Characters'}</div>
+        <div class="related-list">${relatedHTML}</div>
+      </div>`:''}
+
+      <div style="margin-top:1rem">
+        <a href="karakterler.html" style="font-family:'IM Fell English',serif;font-style:italic;font-size:.75rem;color:var(--goldd);text-decoration:none">← ${l==='tr'?'Tüm Karakterler':'All Characters'}</a>
+      </div>
+    </div>`;
+
+  document.getElementById('content').innerHTML=mainHTML+sideHTML;
+}
+
+function applyLang(l){render();}
+
+window.addEventListener('popstate',render);
+initWiki({onLangChange:applyLang});
+init();
+</script>
+</body>
+</html>

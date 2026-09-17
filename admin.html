@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+body{background:var(--bg);padding-top:0!important}
+/* ── LOGIN ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.login-box{background:var(--surface);border:1px solid var(--border);padding:2.5rem;width:100%;max-width:400px}
+.login-title{font-family:'IM Fell English',serif;font-size:1.5rem;color:var(--parchl);margin-bottom:.4rem}
+.login-sub{font-size:.82rem;color:var(--parchd);font-style:italic;margin-bottom:1.75rem}
+.form-row{margin-bottom:1rem}
+.form-label{display:block;font-family:'IM Fell English',serif;font-size:.78rem;color:var(--goldd);margin-bottom:.35rem;font-style:italic}
+.form-input{width:100%;background:var(--deep);border:1px solid var(--border);color:var(--parchl);font-family:'IM Fell English',serif;font-size:.9rem;padding:.55rem .85rem;outline:none;transition:border-color .18s;caret-color:var(--gold)}
+.form-input:focus{border-color:var(--goldd)}
+.form-input::placeholder{color:var(--border);font-style:italic}
+.form-error{font-size:.78rem;color:var(--bloodb);margin-top:.35rem;display:none;font-style:italic}
+.btn-submit{width:100%;font-family:'IM Fell English',serif;font-size:.9rem;color:var(--bg);background:var(--gold);border:none;padding:.75rem;cursor:pointer;transition:background .18s;margin-top:.5rem}
+.btn-submit:hover{background:var(--goldb)}
+.btn-submit:disabled{background:var(--goldd);cursor:not-allowed;opacity:.6}
+
+/* ── ADMIN LAYOUT ── */
+.admin-wrap{display:none;min-height:100vh}
+.admin-header{background:var(--deep);border-bottom:1px solid var(--border);padding:.85rem 2rem;display:flex;align-items:center;gap:1.5rem;position:sticky;top:0;z-index:100}
+.admin-brand{font-family:'IM Fell English',serif;color:var(--gold);font-size:1rem}
+.admin-badge{font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;color:var(--goldd);border:1px solid var(--goldd);padding:.15rem .6rem}
+.admin-header-r{margin-left:auto;display:flex;gap:.75rem;align-items:center}
+.hbtn{font-family:'IM Fell English',serif;font-size:.78rem;color:var(--parchd);background:none;border:1px solid var(--border);padding:.3rem .8rem;cursor:pointer;transition:.18s}
+.hbtn:hover{border-color:var(--goldd);color:var(--gold)}
+.hbtn.danger:hover{border-color:var(--bloodb);color:var(--bloodb)}
+.hbtn.primary{background:var(--gold);color:var(--bg);border-color:var(--gold)}
+.hbtn.primary:hover{background:var(--goldb)}
+
+.admin-body{display:flex;height:calc(100vh - 54px)}
+.admin-sidebar{width:220px;background:var(--deep);border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto;padding:1rem 0}
+.admin-nav-item{display:flex;align-items:center;gap:.6rem;padding:.55rem 1.25rem;cursor:pointer;font-family:'IM Fell English',serif;font-size:.82rem;color:var(--parchd);transition:.15s;border-left:2px solid transparent}
+.admin-nav-item:hover{color:var(--parchl);background:rgba(24,16,7,.5)}
+.admin-nav-item.on{color:var(--gold);border-left-color:var(--gold);background:rgba(196,150,42,.07)}
+.admin-nav-icon{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.admin-nav-group{padding:.5rem 1.25rem .2rem;font-size:.62rem;color:var(--border);letter-spacing:.12em;text-transform:uppercase;font-family:'IM Fell English',serif;font-style:italic;margin-top:.5rem}
+.admin-content{flex:1;overflow-y:auto;padding:1.75rem 2rem}
+
+/* ── GitHub ── */
+.gh-status{display:flex;align-items:center;gap:.5rem;font-size:.78rem;margin-top:.5rem}
+.gh-dot{width:8px;height:8px;border-radius:50%}
+.gh-dot.ok{background:#5A9A5A}
+.gh-dot.err{background:var(--bloodb)}
+.gh-dot.idle{background:var(--border)}
+
+/* ── Generic List Table ── */
+.admin-table{width:100%;border-collapse:collapse;background:var(--surface);margin-top:1rem}
+.admin-table th{font-family:'IM Fell English',serif;font-size:.72rem;color:var(--goldd);font-style:italic;padding:.5rem .85rem;text-align:left;border-bottom:1px solid var(--border);background:var(--deep)}
+.admin-table td{font-size:.82rem;color:var(--parchd);padding:.65rem .85rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.admin-table tr:hover td{background:rgba(196,150,42,.04)}
+.admin-table .td-name{font-family:'IM Fell English',serif;color:var(--parchl);font-size:.88rem}
+.admin-table .td-meta{font-size:.7rem;color:var(--border);font-style:italic}
+.admin-table .td-actions{white-space:nowrap}
+
+/* ── Karakter List (legacy) ── */
+.char-admin-list{display:flex;flex-direction:column;gap:1px;background:var(--border);margin-top:1rem}
+.char-admin-row{background:var(--surface);display:grid;grid-template-columns:40px 1fr 120px 140px 120px;gap:1rem;padding:.75rem 1rem;align-items:center;transition:background .15s}
+.char-admin-row:hover{background:rgba(20,14,6,.8)}
+.car-idx{font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;color:var(--border)}
+.car-name{font-family:'IM Fell English',serif;font-size:.88rem;color:var(--parchl)}
+.car-group{font-size:.72rem;color:var(--parchd);font-style:italic}
+.car-status{font-size:.7rem;font-family:'IM Fell English',serif;font-style:italic}
+.car-status.alive{color:var(--goldd)}
+.car-status.deceased{color:var(--bloodb)}
+.car-status.historical{color:var(--border)}
+.car-actions{display:flex;gap:.4rem}
+.act-btn{font-family:'IM Fell English',serif;font-size:.7rem;border:1px solid var(--border);background:none;color:var(--parchd);padding:.2rem .5rem;cursor:pointer;transition:.15s;white-space:nowrap}
+.act-btn:hover{border-color:var(--goldd);color:var(--gold)}
+.act-btn.del:hover{border-color:var(--bloodb);color:var(--bloodb)}
+@media(max-width:700px){.char-admin-row{grid-template-columns:1fr auto}}
+
+/* ── Forms ── */
+.char-form{background:var(--surface);border:1px solid var(--border);padding:1.75rem;max-width:720px}
+.char-form h3{font-family:'IM Fell English',serif;font-size:1.1rem;color:var(--parchl);margin-bottom:1.25rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.form-row-full{grid-column:1/-1}
+.form-select{width:100%;background:var(--deep);border:1px solid var(--border);color:var(--parchl);font-family:'IM Fell English',serif;font-size:.88rem;padding:.5rem .75rem;outline:none;transition:border-color .18s}
+.form-select:focus{border-color:var(--goldd)}
+.form-textarea{width:100%;background:var(--deep);border:1px solid var(--border);color:var(--parchl);font-family:'IM Fell English',serif;font-size:.85rem;padding:.55rem .85rem;outline:none;resize:vertical;min-height:80px;transition:border-color .18s}
+.form-textarea:focus{border-color:var(--goldd)}
+.form-hint{font-size:.7rem;color:var(--border);font-style:italic;margin-top:.2rem}
+.form-actions{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+
+/* Fotoğraf */
+.photo-wrap{border:1px dashed var(--borderl);padding:1.25rem;text-align:center;cursor:pointer;transition:border-color .18s;position:relative}
+.photo-wrap:hover{border-color:var(--goldd)}
+.photo-preview{width:80px;height:100px;object-fit:cover;object-position:top;margin:0 auto .6rem;display:block;border:1px solid var(--border)}
+.photo-label{font-family:'IM Fell English',serif;font-style:italic;font-size:.78rem;color:var(--parchd)}
+.photo-label strong{color:var(--goldd)}
+#photo-input{position:absolute;inset:0;opacity:0;cursor:pointer}
+
+/* Commit */
+.commit-panel{background:var(--surface);border:1px solid var(--border);padding:1.25rem;max-width:560px}
+.commit-panel h3{font-family:'IM Fell English',serif;font-size:1rem;color:var(--parchl);margin-bottom:.85rem}
+.commit-log{background:var(--deep);border:1px solid var(--border);padding:.85rem;max-height:200px;overflow-y:auto;margin-top:.85rem;font-size:.78rem;color:var(--parchd);font-family:monospace;line-height:1.6}
+.commit-entry{margin-bottom:.3rem}
+.commit-entry.ok{color:#5A9A5A}
+.commit-entry.err{color:var(--bloodb)}
+.commit-entry.info{color:var(--goldd)}
+
+/* Toast */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--surface);border:1px solid var(--goldd);color:var(--parchl);font-family:'IM Fell English',serif;font-style:italic;font-size:.82rem;padding:.6rem 1.25rem;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.toast.err{border-color:var(--bloodb);color:var(--bloodb)}
+
+/* Sections */
+.admin-section{display:none}
+.admin-section.on{display:block}
+.section-title{font-family:'IM Fell English',serif;font-size:1.3rem;color:var(--parchl);margin-bottom:.35rem}
+.section-sub{font-size:.82rem;color:var(--parchd);font-style:italic;margin-bottom:1.5rem}
+
+/* Stat cards */
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--surface);border:1px solid var(--border);padding:1.1rem;text-align:center}
+.stat-num{font-family:'IM Fell English',serif;font-size:2rem;color:var(--gold);margin-bottom:.2rem}
+.stat-lbl{font-size:.72rem;color:var(--parchd);font-style:italic}
+.pending-badge{font-size:.72rem;background:var(--goldd);color:var(--bg);padding:1px 6px;border-radius:2px;margin-left:.4rem;font-family:monospace}
+
+/* Quote preview */
+.quote-text{font-style:italic;color:var(--parchl);font-size:.85rem;line-height:1.5;max-width:520px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Chapter badge */
+.ch-badge{font-family:'IM Fell English',serif;font-size:.7rem;padding:.15rem .5rem;border:1px solid;display:inline-block}
+.ch-badge.free{color:#5A9A5A;border-color:#5A9A5A}
+.ch-badge.locked{color:var(--border);border-color:var(--border)}
+
+/* Toolbar */
+.sec-toolbar{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.sec-search{display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--border);padding:.4rem .9rem;flex:1;max-width:280px}
+.sec-search input{background:none;border:none;outline:none;font-family:'IM Fell English',serif;font-size:.85rem;color:var(--parchl);caret-color:var(--gold);width:100%}
+.sec-search input::placeholder{color:var(--border);font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- ── GİRİŞ ── -->
+<div class="login-wrap" id="login-wrap">
+  <div class="login-box">
+    <div class="login-title">⚔ Stallhart Admin</div>
+    <p class="login-sub">Yönetim paneline giriş yap.</p>
+    <div class="form-row">
+      <label class="form-label" for="pw-input">Parola</label>
+      <input type="password" class="form-input" id="pw-input" placeholder="Parolayı gir…" autocomplete="current-password">
+      <div class="form-error" id="pw-error">Yanlış parola.</div>
+    </div>
+    <button class="btn-submit" id="login-btn">Giriş Yap</button>
+    <p style="margin-top:1rem;font-size:.75rem;color:var(--border);font-style:italic;text-align:center">Varsayılan: <strong style="color:var(--goldd)">stallhart</strong></p>
+  </div>
+</div>
+
+<!-- ── ADMIN PANELİ ── -->
+<div class="admin-wrap" id="admin-wrap">
+  <div class="admin-header">
+    <span class="admin-brand">Stallhart Wiki</span>
+    <span class="admin-badge">Admin Paneli</span>
+    <div class="admin-header-r">
+      <button class="hbtn primary" id="save-btn" onclick="openSection('commit')">💾 GitHub'a Kaydet <span class="pending-badge" id="pending-count" style="display:none">0</span></button>
+      <button class="hbtn danger" onclick="logout()">Çıkış</button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <!-- SİDEBAR -->
+    <div class="admin-sidebar">
+      <div class="admin-nav-item on" data-sec="dashboard" onclick="openSection('dashboard')"><span class="admin-nav-icon">🏠</span>Pano</div>
+
+      <div class="admin-nav-group">Karakterler</div>
+      <div class="admin-nav-item" data-sec="chars"     onclick="openSection('chars')"><span class="admin-nav-icon">👤</span>Liste</div>
+      <div class="admin-nav-item" data-sec="new-char"  onclick="openSection('new-char')"><span class="admin-nav-icon">➕</span>Yeni Karakter</div>
+
+      <div class="admin-nav-group">İçerik</div>
+      <div class="admin-nav-item" data-sec="quotes"    onclick="openSection('quotes')"><span class="admin-nav-icon">💬</span>Alıntılar</div>
+      <div class="admin-nav-item" data-sec="new-quote" onclick="openSection('new-quote')"><span class="admin-nav-icon">➕</span>Yeni Alıntı</div>
+      <div class="admin-nav-item" data-sec="chapters"  onclick="openSection('chapters')"><span class="admin-nav-icon">📚</span>Bölümler</div>
+      <div class="admin-nav-item" data-sec="new-chapter" onclick="openSection('new-chapter')"><span class="admin-nav-icon">➕</span>Yeni Bölüm</div>
+
+      <div class="admin-nav-group">Lore</div>
+      <div class="admin-nav-item" data-sec="glossary"  onclick="openSection('glossary')"><span class="admin-nav-icon">📖</span>Terimler</div>
+      <div class="admin-nav-item" data-sec="new-term"  onclick="openSection('new-term')"><span class="admin-nav-icon">➕</span>Yeni Terim</div>
+      <div class="admin-nav-item" data-sec="events"    onclick="openSection('events')"><span class="admin-nav-icon">⏳</span>Kronoloji</div>
+      <div class="admin-nav-item" data-sec="new-event" onclick="openSection('new-event')"><span class="admin-nav-icon">➕</span>Yeni Olay</div>
+
+      <div class="admin-nav-group">Sistem</div>
+      <div class="admin-nav-item" data-sec="commit"    onclick="openSection('commit')"><span class="admin-nav-icon">☁</span>GitHub</div>
+      <div class="admin-nav-item" data-sec="settings"  onclick="openSection('settings')"><span class="admin-nav-icon">⚙</span>Ayarlar</div>
+      <div style="padding:.75rem 1.25rem;margin-top:1rem;border-top:1px solid var(--border)">
+        <a href="index.html" style="font-family:'IM Fell English',serif;font-size:.75rem;color:var(--parchd);text-decoration:none;font-style:italic">← Siteye Dön</a>
+      </div>
+    </div>
+
+    <!-- İÇERİK -->
+    <div class="admin-content">
+
+      <!-- PANO -->
+      <div class="admin-section on" id="sec-dashboard">
+        <div class="section-title">Pano</div>
+        <div class="section-sub">Tüm içerik türleri ve bekleyen değişiklikler.</div>
+        <div class="stat-cards">
+          <div class="stat-card"><div class="stat-num" id="stat-chars">—</div><div class="stat-lbl">Karakter</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-alive">—</div><div class="stat-lbl">Yaşayan</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-deceased">—</div><div class="stat-lbl">Hayatını Kaybeden</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-quotes">—</div><div class="stat-lbl">Alıntı</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-chapters">—</div><div class="stat-lbl">Bölüm</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-glossary">—</div><div class="stat-lbl">Lore Terimi</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-events">—</div><div class="stat-lbl">Kronoloji</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-pending" style="color:var(--goldd)">0</div><div class="stat-lbl">Bekleyen</div></div>
+        </div>
+        <div style="font-size:.82rem;color:var(--parchd);font-style:italic">Değişiklikler tarayıcıda bekler — GitHub'a Kaydet ile canlıya alınır.</div>
+      </div>
+
+      <!-- ══════════════ KARAKTERLER ══════════════ -->
+      <div class="admin-section" id="sec-chars">
+        <div class="section-title">Karakterler</div>
+        <div class="section-sub">Tüm karakterleri düzenle, fotoğraf ekle veya sil.</div>
+        <div class="sec-toolbar">
+          <div class="sec-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--goldd)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <input type="search" id="admin-char-search" placeholder="İsim ara…" autocomplete="off">
+          </div>
+          <button class="hbtn primary" onclick="openSection('new-char')">+ Yeni Karakter</button>
+        </div>
+        <div class="char-admin-list" id="char-admin-list"></div>
+      </div>
+
+      <!-- KARAKTER FORM -->
+      <div class="admin-section" id="sec-new-char">
+        <div class="section-title" id="form-title">Yeni Karakter</div>
+        <div class="section-sub">TR ve EN alanları bağımsızdır.</div>
+        <div class="char-form">
+          <h3 id="form-subtitle">Temel Bilgiler</h3>
+          <div class="form-grid">
+            <div class="form-row form-row-full">
+              <label class="form-label">Kimlik (ID)</label>
+              <input type="text" class="form-input" id="f-id" placeholder="ornek: zeandor-stallhart">
+              <div class="form-hint">Küçük harf, tire ile. Oluşturulduktan sonra değiştirilmez.</div>
+            </div>
+            <div class="form-row"><label class="form-label">İsim — TR</label><input type="text" class="form-input" id="f-name-tr"></div>
+            <div class="form-row"><label class="form-label">İsim — EN</label><input type="text" class="form-input" id="f-name-en"></div>
+            <div class="form-row"><label class="form-label">Unvan — TR</label><input type="text" class="form-input" id="f-title-tr"></div>
+            <div class="form-row"><label class="form-label">Unvan — EN</label><input type="text" class="form-input" id="f-title-en"></div>
+            <div class="form-row"><label class="form-label">Hane — TR</label><input type="text" class="form-input" id="f-house-tr"></div>
+            <div class="form-row"><label class="form-label">Hane — EN</label><input type="text" class="form-input" id="f-house-en"></div>
+            <div class="form-row">
+              <label class="form-label">Grup</label>
+              <select class="form-select" id="f-group">
+                <option value="stallhart">stallhart — İmparatorluk</option>
+                <option value="arhan">arhan — Arhan Hanesi</option>
+                <option value="solgar">solgar — Solgar Hanesi</option>
+                <option value="selya">selya — Selya Hanesi</option>
+                <option value="rebel">rebel — İsyancılar</option>
+                <option value="court">court — Saray / Valiler</option>
+                <option value="arathen">arathen — Arathen</option>
+                <option value="other">other — Diğer</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Durum</label>
+              <select class="form-select" id="f-status">
+                <option value="alive">alive — Yaşıyor</option>
+                <option value="deceased">deceased — Hayatını Kaybetti</option>
+                <option value="historical">historical — Tarihsel</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Doğum Yeri — TR</label><input type="text" class="form-input" id="f-birth-tr"></div>
+            <div class="form-row"><label class="form-label">Doğum Yeri — EN</label><input type="text" class="form-input" id="f-birth-en"></div>
+            <div class="form-row"><label class="form-label">Bağlılık — TR</label><input type="text" class="form-input" id="f-alleg-tr"></div>
+            <div class="form-row"><label class="form-label">Bağlılık — EN</label><input type="text" class="form-input" id="f-alleg-en"></div>
+            <div class="form-row form-row-full"><label class="form-label">Biyografi — TR</label><textarea class="form-textarea" id="f-bio-tr" rows="4"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Biyografi — EN</label><textarea class="form-textarea" id="f-bio-en" rows="4"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Alıntı — TR</label><textarea class="form-textarea" id="f-quote-tr" rows="2"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Alıntı — EN</label><textarea class="form-textarea" id="f-quote-en" rows="2"></textarea></div>
+            <div class="form-row"><label class="form-label">Lakap — TR</label><input type="text" class="form-input" id="f-epi-tr"></div>
+            <div class="form-row"><label class="form-label">Lakap — EN</label><input type="text" class="form-input" id="f-epi-en"></div>
+            <div class="form-row form-row-full"><label class="form-label">Müttefikler (ID, virgülle)</label><input type="text" class="form-input" id="f-allies" placeholder="celios, liaher"></div>
+            <div class="form-row form-row-full"><label class="form-label">Düşmanlar (ID, virgülle)</label><input type="text" class="form-input" id="f-enemies" placeholder="erthan, wolrez-galet"></div>
+            <div class="form-row form-row-full"><label class="form-label">Bölümler (virgülle)</label><input type="text" class="form-input" id="f-chapters" placeholder="Bölüm – Muhafız"></div>
+            <div class="form-row form-row-full">
+              <label class="form-label">Fotoğraf</label>
+              <div class="photo-wrap" id="photo-wrap">
+                <img id="photo-preview" class="photo-preview" src="" alt="" style="display:none">
+                <div class="photo-label" id="photo-label"><strong>Tıkla veya sürükle</strong><br>PNG, JPG — max 2 MB</div>
+                <input type="file" id="photo-input" accept="image/png,image/jpeg,image/webp">
+              </div>
+              <input type="hidden" id="f-image" value="">
+              <div class="form-hint" id="photo-hint">Mevcut: (yok)</div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="hbtn primary" onclick="saveChar()">✔ Kaydet</button>
+            <button class="hbtn" onclick="clearForm()">↺ Temizle</button>
+            <button class="hbtn" id="delete-btn" style="display:none" onclick="deleteChar()">🗑 Sil</button>
+            <button class="hbtn" onclick="openSection('chars')">← İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ ALINTI LİSTESİ ══════════════ -->
+      <div class="admin-section" id="sec-quotes">
+        <div class="section-title">Alıntılar</div>
+        <div class="section-sub">quotes.json — toplam <span id="quote-count">—</span> alıntı</div>
+        <div class="sec-toolbar">
+          <div class="sec-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--goldd)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <input type="search" id="quote-search" placeholder="Metin veya konuşmacı ara…" autocomplete="off">
+          </div>
+          <button class="hbtn primary" onclick="openSection('new-quote')">+ Yeni Alıntı</button>
+        </div>
+        <table class="admin-table" id="quote-table">
+          <thead><tr><th>#</th><th>Alıntı (TR)</th><th>Konuşmacı</th><th>Tema</th><th style="width:100px">İşlem</th></tr></thead>
+          <tbody id="quote-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ALINTI FORM -->
+      <div class="admin-section" id="sec-new-quote">
+        <div class="section-title" id="quote-form-title">Yeni Alıntı</div>
+        <div class="section-sub">TR ve EN metinleri birbirinden bağımsızdır.</div>
+        <div class="char-form">
+          <h3>Metin</h3>
+          <div class="form-grid">
+            <div class="form-row form-row-full"><label class="form-label">Alıntı Metni — TR</label><textarea class="form-textarea" id="qf-text-tr" rows="3" placeholder="Türkçe alıntı…"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Alıntı Metni — EN</label><textarea class="form-textarea" id="qf-text-en" rows="3" placeholder="English quote…"></textarea></div>
+            <div class="form-row"><label class="form-label">Konuşmacı — TR</label><input type="text" class="form-input" id="qf-speaker-tr" placeholder="Ör: Zeandor Stallhart"></div>
+            <div class="form-row"><label class="form-label">Konuşmacı — EN</label><input type="text" class="form-input" id="qf-speaker-en" placeholder="E.g.: Zeandor Stallhart"></div>
+            <div class="form-row form-row-full">
+              <label class="form-label">Tema</label>
+              <select class="form-select" id="qf-theme">
+                <option value="kader">kader</option>
+                <option value="inanc">inanc</option>
+                <option value="guc">guc</option>
+                <option value="adalet">adalet</option>
+                <option value="siyaset">siyaset</option>
+                <option value="savas">savas</option>
+                <option value="vefat">vefat</option>
+                <option value="diger">diger</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="hbtn primary" onclick="saveQuote()">✔ Kaydet</button>
+            <button class="hbtn" onclick="clearQuoteForm()">↺ Temizle</button>
+            <button class="hbtn" id="q-delete-btn" style="display:none" onclick="deleteQuote()">🗑 Sil</button>
+            <button class="hbtn" onclick="openSection('quotes')">← İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ BÖLÜMLER ══════════════ -->
+      <div class="admin-section" id="sec-chapters">
+        <div class="section-title">Bölümler</div>
+        <div class="section-sub">chapters.json — toplam <span id="chapter-count">—</span> bölüm</div>
+        <div class="sec-toolbar">
+          <button class="hbtn primary" onclick="openSection('new-chapter')">+ Yeni Bölüm</button>
+        </div>
+        <table class="admin-table" id="chapter-table">
+          <thead><tr><th>No</th><th>Başlık</th><th>POV</th><th>KS</th><th>Durum</th><th style="width:100px">İşlem</th></tr></thead>
+          <tbody id="chapter-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- BÖLÜM FORM -->
+      <div class="admin-section" id="sec-new-chapter">
+        <div class="section-title" id="chap-form-title">Yeni Bölüm</div>
+        <div class="section-sub">Bölüm numarası sıralama için kullanılır.</div>
+        <div class="char-form">
+          <h3>Temel Bilgiler</h3>
+          <div class="form-grid">
+            <div class="form-row">
+              <label class="form-label">Numara (id)</label>
+              <input type="number" class="form-input" id="cf-id" placeholder="11" min="1">
+              <div class="form-hint">Sıralama için tam sayı. Düzenlemede değiştirilmez.</div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Romen No (num)</label>
+              <input type="text" class="form-input" id="cf-num" placeholder="XI">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Ark (arc)</label>
+              <input type="number" class="form-input" id="cf-arc" value="1" min="1">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Ücretsiz mi?</label>
+              <select class="form-select" id="cf-free">
+                <option value="true">Evet (Ücretsiz)</option>
+                <option value="false">Hayır (Kilitli)</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Başlık — TR</label><input type="text" class="form-input" id="cf-title-tr" placeholder="Ör: Çamur"></div>
+            <div class="form-row"><label class="form-label">Başlık — EN</label><input type="text" class="form-input" id="cf-title-en" placeholder="E.g.: Mud"></div>
+            <div class="form-row form-row-full"><label class="form-label">POV Karakterler — TR</label><input type="text" class="form-input" id="cf-pov-tr" placeholder="Aertas · Ellan · Erthan"></div>
+            <div class="form-row form-row-full"><label class="form-label">POV Karakterler — EN</label><input type="text" class="form-input" id="cf-pov-en" placeholder="Aertas · Ellan · Erthan"></div>
+            <div class="form-row form-row-full"><label class="form-label">KS Tarihi</label><input type="text" class="form-input" id="cf-ks" placeholder="KS 1481 Öncesi"></div>
+            <div class="form-row form-row-full"><label class="form-label">Özet — TR</label><textarea class="form-textarea" id="cf-syn-tr" rows="4" placeholder="Bölüm özeti…"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Özet — EN</label><textarea class="form-textarea" id="cf-syn-en" rows="4" placeholder="Chapter summary…"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">İlk Cümle</label><input type="text" class="form-input" id="cf-first" placeholder="Puslu bulutlar gökyüzünü tamamen esir almıştı."></div>
+          </div>
+          <div class="form-actions">
+            <button class="hbtn primary" onclick="saveChapter()">✔ Kaydet</button>
+            <button class="hbtn" onclick="clearChapterForm()">↺ Temizle</button>
+            <button class="hbtn" id="ch-delete-btn" style="display:none" onclick="deleteChapter()">🗑 Sil</button>
+            <button class="hbtn" onclick="openSection('chapters')">← İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ LORE: TERİMLER ══════════════ -->
+      <div class="admin-section" id="sec-glossary">
+        <div class="section-title">Lore Terimleri</div>
+        <div class="section-sub">lore.json → glossary — toplam <span id="gloss-count">—</span> terim</div>
+        <div class="sec-toolbar">
+          <div class="sec-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--goldd)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <input type="search" id="gloss-search" placeholder="Terim ara…" autocomplete="off">
+          </div>
+          <button class="hbtn primary" onclick="openSection('new-term')">+ Yeni Terim</button>
+        </div>
+        <table class="admin-table" id="gloss-table">
+          <thead><tr><th>ID</th><th>Terim (TR)</th><th>Tür</th><th>Tanım (TR)</th><th style="width:100px">İşlem</th></tr></thead>
+          <tbody id="gloss-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- TERIM FORM -->
+      <div class="admin-section" id="sec-new-term">
+        <div class="section-title" id="term-form-title">Yeni Terim</div>
+        <div class="section-sub">lore.json → glossary</div>
+        <div class="char-form">
+          <h3>Terim Bilgileri</h3>
+          <div class="form-grid">
+            <div class="form-row form-row-full">
+              <label class="form-label">ID</label>
+              <input type="text" class="form-input" id="tf-id" placeholder="ornek: bakırsu-vadisi">
+              <div class="form-hint">Küçük harf, tire ile.</div>
+            </div>
+            <div class="form-row">
+              <label class="form-label">Tür</label>
+              <select class="form-select" id="tf-type">
+                <option value="geo">geo — Coğrafya</option>
+                <option value="military">military — Askeri</option>
+                <option value="political">political — Siyasi</option>
+                <option value="religious">religious — Dini</option>
+                <option value="cultural">cultural — Kültürel</option>
+                <option value="person">person — Kişi</option>
+                <option value="other">other — Diğer</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Terim — TR</label><input type="text" class="form-input" id="tf-term-tr"></div>
+            <div class="form-row"><label class="form-label">Terim — EN</label><input type="text" class="form-input" id="tf-term-en"></div>
+            <div class="form-row form-row-full"><label class="form-label">Tanım — TR</label><textarea class="form-textarea" id="tf-def-tr" rows="3"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Tanım — EN</label><textarea class="form-textarea" id="tf-def-en" rows="3"></textarea></div>
+          </div>
+          <div class="form-actions">
+            <button class="hbtn primary" onclick="saveTerm()">✔ Kaydet</button>
+            <button class="hbtn" onclick="clearTermForm()">↺ Temizle</button>
+            <button class="hbtn" id="tf-delete-btn" style="display:none" onclick="deleteTerm()">🗑 Sil</button>
+            <button class="hbtn" onclick="openSection('glossary')">← İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ KRONOLOJİ ══════════════ -->
+      <div class="admin-section" id="sec-events">
+        <div class="section-title">Kronoloji</div>
+        <div class="section-sub">lore.json → events — toplam <span id="event-count">—</span> olay</div>
+        <div class="sec-toolbar">
+          <div class="sec-search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--goldd)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+            <input type="search" id="event-search" placeholder="Olay ara…" autocomplete="off">
+          </div>
+          <button class="hbtn primary" onclick="openSection('new-event')">+ Yeni Olay</button>
+        </div>
+        <table class="admin-table" id="event-table">
+          <thead><tr><th>KS</th><th>Olay</th><th>Tür</th><th>Açıklama</th><th style="width:100px">İşlem</th></tr></thead>
+          <tbody id="event-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- OLAY FORM -->
+      <div class="admin-section" id="sec-new-event">
+        <div class="section-title" id="event-form-title">Yeni Olay</div>
+        <div class="section-sub">lore.json → events</div>
+        <div class="char-form">
+          <h3>Olay Bilgileri</h3>
+          <div class="form-grid">
+            <div class="form-row">
+              <label class="form-label">KS Tarihi</label>
+              <input type="text" class="form-input" id="ef-ks" placeholder="1481">
+            </div>
+            <div class="form-row">
+              <label class="form-label">Tür</label>
+              <select class="form-select" id="ef-type">
+                <option value="ruler">ruler — Hükümdarlık</option>
+                <option value="war">war — Savaş</option>
+                <option value="political">political — Siyasi</option>
+                <option value="disaster">disaster — Felaket</option>
+                <option value="religious">religious — Dini</option>
+                <option value="other">other — Diğer</option>
+              </select>
+            </div>
+            <div class="form-row"><label class="form-label">Olay Adı — TR</label><input type="text" class="form-input" id="ef-name-tr"></div>
+            <div class="form-row"><label class="form-label">Olay Adı — EN</label><input type="text" class="form-input" id="ef-name-en"></div>
+            <div class="form-row form-row-full"><label class="form-label">Açıklama — TR</label><textarea class="form-textarea" id="ef-desc-tr" rows="3"></textarea></div>
+            <div class="form-row form-row-full"><label class="form-label">Açıklama — EN</label><textarea class="form-textarea" id="ef-desc-en" rows="3"></textarea></div>
+          </div>
+          <div class="form-actions">
+            <button class="hbtn primary" onclick="saveEvent()">✔ Kaydet</button>
+            <button class="hbtn" onclick="clearEventForm()">↺ Temizle</button>
+            <button class="hbtn" id="ef-delete-btn" style="display:none" onclick="deleteEvent()">🗑 Sil</button>
+            <button class="hbtn" onclick="openSection('events')">← İptal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════ GITHUB ══════════════ -->
+      <div class="admin-section" id="sec-commit">
+        <div class="section-title">GitHub'a Kaydet</div>
+        <div class="section-sub">Bekleyen tüm değişiklikler GitHub repo'na commit edilir.</div>
+        <div class="commit-panel">
+          <h3>GitHub Bağlantısı</h3>
+          <div class="form-grid">
+            <div class="form-row"><label class="form-label">Kullanıcı Adı</label><input type="text" class="form-input" id="gh-user" placeholder="craesx"></div>
+            <div class="form-row"><label class="form-label">Repo Adı</label><input type="text" class="form-input" id="gh-repo" placeholder="stallhart-wiki"></div>
+            <div class="form-row form-row-full">
+              <label class="form-label">Personal Access Token</label>
+              <input type="password" class="form-input" id="gh-token" placeholder="ghp_…">
+              <div class="form-hint">Settings → Developer settings → Personal access tokens → repo yetkisi</div>
+            </div>
+          </div>
+          <div class="gh-status"><div class="gh-dot idle" id="gh-dot"></div><span id="gh-status-text" style="font-size:.78rem;color:var(--parchd);font-style:italic">Henüz bağlantı kurulmadı.</span></div>
+          <div class="form-actions" style="margin-top:1rem">
+            <button class="hbtn" onclick="testGH()">Bağlantıyı Test Et</button>
+            <button class="hbtn primary" onclick="commitAll()">☁ Tüm Değişiklikleri Commit Et</button>
+          </div>
+          <div class="commit-log" id="commit-log" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- ══════════════ AYARLAR ══════════════ -->
+      <div class="admin-section" id="sec-settings">
+        <div class="section-title">Ayarlar</div>
+        <div class="section-sub">Panel yönetimi.</div>
+        <div class="commit-panel">
+          <h3>Parola Değiştir</h3>
+          <div class="form-row"><label class="form-label">Mevcut Parola</label><input type="password" class="form-input" id="pw-old"></div>
+          <div class="form-row"><label class="form-label">Yeni Parola</label><input type="password" class="form-input" id="pw-new"></div>
+          <div class="form-actions"><button class="hbtn primary" onclick="changePw()">Parolayı Güncelle</button></div>
+          <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)">
+            <label class="form-label">Tüm Yerel Değişiklikleri Sıfırla</label>
+            <p style="font-size:.78rem;color:var(--parchd);font-style:italic;margin-bottom:.75rem">Commit edilmemiş tüm yerel değişiklikleri siler.</p>
+            <button class="hbtn danger" onclick="if(confirm('Emin misin?'))clearPending()">🗑 Değişiklikleri Temizle</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.admin-content -->
+  </div><!-- /.admin-body -->
+</div><!-- /.admin-wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+/* ══ AUTH ══════════════════════════════════════════════ */
+const DEFAULT_PW = 'stallhart';
+function hashStr(s){ let h=0;for(let i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0;}return h.toString(36); }
+function getPwHash(){ return localStorage.getItem('sw-admin-pw') || hashStr(DEFAULT_PW); }
+function isAuthed(){ return sessionStorage.getItem('sw-admin-ok') === '1'; }
+
+function tryLogin(){
+  const pw = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-error');
+  if(hashStr(pw) === getPwHash()){
+    sessionStorage.setItem('sw-admin-ok','1');
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('admin-wrap').style.display='block';
+    initAdmin();
+  } else {
+    err.style.display='block';
+    document.getElementById('pw-input').value='';
+  }
+}
+function logout(){ sessionStorage.removeItem('sw-admin-ok'); location.reload(); }
+function changePw(){
+  const old=document.getElementById('pw-old').value;
+  const nw=document.getElementById('pw-new').value;
+  if(hashStr(old)!==getPwHash()){toast('Mevcut parola hatalı','err');return;}
+  if(!nw||nw.length<4){toast('En az 4 karakter','err');return;}
+  localStorage.setItem('sw-admin-pw',hashStr(nw));
+  document.getElementById('pw-old').value='';
+  document.getElementById('pw-new').value='';
+  toast('Parola güncellendi ✔');
+}
+
+document.getElementById('login-btn').addEventListener('click', tryLogin);
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryLogin();});
+if(isAuthed()){ document.getElementById('login-wrap').style.display='none'; document.getElementById('admin-wrap').style.display='block'; }
+
+/* ══ VERİ ══════════════════════════════════════════════ */
+let CHARS = [];
+let QUOTES = [];
+let CHAPTERS = [];
+let GLOSSARY = [];
+let EVENTS = [];
+let PENDING = {};
+
+function localLoad(key){ const s=localStorage.getItem(key); if(s){try{return JSON.parse(s);}catch{}} return null; }
+function localSave(key,val){ localStorage.setItem(key,JSON.stringify(val)); }
+
+async function fetchJSON(file){
+  const r = await fetch('data/'+file+'?t='+Date.now());
+  if(!r.ok) throw new Error('Yüklenemedi: '+file);
+  return r.json();
+}
+
+async function initAdmin(){
+  // Karakterler
+  const lc = localLoad('sw-admin-chars');
+  if(lc) CHARS = lc;
+  else{ try{ const d=await fetchJSON('characters.json'); CHARS=d.characters||[]; localSave('sw-admin-chars',CHARS); }catch{ CHARS=[]; } }
+
+  // Alıntılar
+  const lq = localLoad('sw-admin-quotes');
+  if(lq) QUOTES = lq;
+  else{ try{ const d=await fetchJSON('quotes.json'); QUOTES=d.quotes||[]; localSave('sw-admin-quotes',QUOTES); }catch{ QUOTES=[]; } }
+
+  // Bölümler
+  const lch = localLoad('sw-admin-chapters');
+  if(lch) CHAPTERS = lch;
+  else{ try{ const d=await fetchJSON('chapters.json'); CHAPTERS=d.chapters||[]; localSave('sw-admin-chapters',CHAPTERS); }catch{ CHAPTERS=[]; } }
+
+  // Lore
+  const ll = localLoad('sw-admin-lore');
+  if(ll){ GLOSSARY=ll.glossary||[]; EVENTS=ll.events||[]; }
+  else{
+    try{
+      const d=await fetchJSON('lore.json');
+      GLOSSARY=d.glossary||[]; EVENTS=d.events||[];
+      localSave('sw-admin-lore',{glossary:GLOSSARY,events:EVENTS});
+    }catch{ GLOSSARY=[]; EVENTS=[]; }
+  }
+
+  renderDashboard();
+  renderCharList();
+  renderQuoteList();
+  renderChapterList();
+  renderGlossList();
+  renderEventList();
+  loadGHSettings();
+}
+
+/* ── PENDING ── */
+function markPendingChars(){ PENDING['data/characters.json']=JSON.stringify({characters:CHARS},null,2); localSave('sw-admin-chars',CHARS); updatePendingCount(); }
+function markPendingQuotes(){ PENDING['data/quotes.json']=JSON.stringify({quotes:QUOTES},null,2); localSave('sw-admin-quotes',QUOTES); updatePendingCount(); }
+function markPendingChapters(){ PENDING['data/chapters.json']=JSON.stringify({chapters:CHAPTERS},null,2); localSave('sw-admin-chapters',CHAPTERS); updatePendingCount(); }
+function markPendingLore(){
+  PENDING['data/lore.json']=JSON.stringify({...localLoad('sw-admin-lore-full')||{},glossary:GLOSSARY,events:EVENTS},null,2);
+  localSave('sw-admin-lore',{glossary:GLOSSARY,events:EVENTS}); updatePendingCount();
+}
+
+function updatePendingCount(){
+  const n=Object.keys(PENDING).length;
+  document.getElementById('pending-count').textContent=n;
+  document.getElementById('pending-count').style.display=n?'inline':'none';
+  document.getElementById('stat-pending').textContent=n;
+}
+function clearPending(){
+  PENDING={};
+  ['sw-admin-chars','sw-admin-quotes','sw-admin-chapters','sw-admin-lore'].forEach(k=>localStorage.removeItem(k));
+  toast('Temizlendi. Yenileniyor…'); setTimeout(()=>location.reload(),1000);
+}
+
+/* ══ PANO ══════════════════════════════════════════════ */
+function renderDashboard(){
+  document.getElementById('stat-chars').textContent=CHARS.length;
+  document.getElementById('stat-alive').textContent=CHARS.filter(c=>c.status==='alive').length;
+  document.getElementById('stat-deceased').textContent=CHARS.filter(c=>c.status==='deceased').length;
+  document.getElementById('stat-quotes').textContent=QUOTES.length;
+  document.getElementById('stat-chapters').textContent=CHAPTERS.length;
+  document.getElementById('stat-glossary').textContent=GLOSSARY.length;
+  document.getElementById('stat-events').textContent=EVENTS.length;
+}
+
+/* ══ SECTIONS ══════════════════════════════════════════ */
+function openSection(id){
+  document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.admin-nav-item').forEach(n=>n.classList.remove('on'));
+  document.getElementById('sec-'+id)?.classList.add('on');
+  document.querySelector(`[data-sec="${id}"]`)?.classList.add('on');
+  if(id==='new-char'&&!editingId) clearForm();
+  if(id==='new-quote'&&!editingQuoteIdx) clearQuoteForm();
+  if(id==='new-chapter'&&editingChapterId===null) clearChapterForm();
+  if(id==='new-term'&&editingTermId===null) clearTermForm();
+  if(id==='new-event'&&editingEventIdx===null) clearEventForm();
+}
+
+/* ══ YARDIMCI ══════════════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function s(v){return String(v||'').trim();}
+function arr(v){return v.split(',').map(x=>x.trim()).filter(Boolean);}
+let toastT;
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast '+(type||'');
+  el.classList.add('show'); clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+/* ══════════ KARAKTERLER ══════════════════════════════ */
+function renderCharList(q=''){
+  const list=document.getElementById('char-admin-list');
+  const filtered=q?CHARS.filter(c=>(c.name?.tr||''+c.name?.en||'').toLowerCase().includes(q.toLowerCase())):CHARS;
+  const lbl={alive:'Yaşıyor',deceased:'Hayatını Kaybetti',historical:'Tarihsel'};
+  list.innerHTML=filtered.map((c,i)=>`
+    <div class="char-admin-row">
+      <span class="car-idx">${i+1}</span>
+      <div><div class="car-name">${esc(c.name?.tr||c.id)}</div><div class="car-group">${c.group||'—'} · ${c.house?.tr||'—'}</div></div>
+      <span class="car-status ${c.status}">${lbl[c.status]||c.status}</span>
+      <div style="font-size:.72rem;color:var(--border);font-style:italic">${c.id}</div>
+      <div class="car-actions"><button class="act-btn" onclick="editChar('${c.id}')">✎</button><button class="act-btn del" onclick="quickDelete('${c.id}')">✕</button></div>
+    </div>`).join('')||'<div style="padding:1.5rem;color:var(--parchd);font-style:italic">Sonuç yok.</div>';
+}
+document.getElementById('admin-char-search').addEventListener('input',function(){renderCharList(this.value);});
+
+function quickDelete(id){
+  if(!confirm(`"${id}" silinsin mi?`))return;
+  CHARS=CHARS.filter(c=>c.id!==id);
+  markPendingChars(); renderCharList(); renderDashboard(); toast(id+' silindi');
+}
+
+let editingId=null;
+function clearForm(){
+  editingId=null;
+  ['id','name-tr','name-en','title-tr','title-en','house-tr','house-en','birth-tr','birth-en',
+   'alleg-tr','alleg-en','bio-tr','bio-en','quote-tr','quote-en','epi-tr','epi-en',
+   'allies','enemies','chapters','image'].forEach(k=>{const el=document.getElementById('f-'+k);if(el)el.value='';});
+  document.getElementById('f-group').value='stallhart';
+  document.getElementById('f-status').value='alive';
+  document.getElementById('photo-preview').style.display='none';
+  document.getElementById('photo-label').style.display='block';
+  document.getElementById('photo-hint').textContent='Mevcut: (yok)';
+  document.getElementById('delete-btn').style.display='none';
+  document.getElementById('form-title').textContent='Yeni Karakter';
+  document.getElementById('f-id').disabled=false;
+}
+function editChar(id){
+  const c=CHARS.find(x=>x.id===id); if(!c)return;
+  clearForm(); editingId=id;
+  document.getElementById('form-title').textContent='Karakteri Düzenle';
+  document.getElementById('f-id').value=c.id; document.getElementById('f-id').disabled=true;
+  document.getElementById('f-name-tr').value=c.name?.tr||'';
+  document.getElementById('f-name-en').value=c.name?.en||'';
+  document.getElementById('f-title-tr').value=c.title?.tr||'';
+  document.getElementById('f-title-en').value=c.title?.en||'';
+  document.getElementById('f-house-tr').value=c.house?.tr||'';
+  document.getElementById('f-house-en').value=c.house?.en||'';
+  document.getElementById('f-group').value=c.group||'other';
+  document.getElementById('f-status').value=c.status||'alive';
+  document.getElementById('f-birth-tr').value=c.birth?.tr||'';
+  document.getElementById('f-birth-en').value=c.birth?.en||'';
+  document.getElementById('f-alleg-tr').value=c.alleg?.tr||'';
+  document.getElementById('f-alleg-en').value=c.alleg?.en||'';
+  document.getElementById('f-bio-tr').value=c.bio?.tr||'';
+  document.getElementById('f-bio-en').value=c.bio?.en||'';
+  document.getElementById('f-quote-tr').value=c.quote?.tr||'';
+  document.getElementById('f-quote-en').value=c.quote?.en||'';
+  document.getElementById('f-epi-tr').value=c.epi?.tr||'';
+  document.getElementById('f-epi-en').value=c.epi?.en||'';
+  document.getElementById('f-allies').value=(c.allies||[]).join(', ');
+  document.getElementById('f-enemies').value=(c.enemies||[]).join(', ');
+  document.getElementById('f-chapters').value=(c.chapters||[]).join(', ');
+  document.getElementById('f-image').value=c.image||'';
+  document.getElementById('photo-hint').textContent='Mevcut: '+(c.image||'(yok)');
+  if(c.image){ const img=document.getElementById('photo-preview'); img.src=c.image; img.style.display='block'; document.getElementById('photo-label').style.display='none'; }
+  document.getElementById('delete-btn').style.display='inline-block';
+  openSection('new-char');
+}
+function saveChar(){
+  const id=editingId||s(document.getElementById('f-id').value).toLowerCase().replace(/\s+/g,'-');
+  if(!id){toast('ID boş olamaz','err');return;}
+  const nc={
+    id, group:document.getElementById('f-group').value, status:document.getElementById('f-status').value,
+    name:{tr:s(document.getElementById('f-name-tr').value),en:s(document.getElementById('f-name-en').value)},
+    house:{tr:s(document.getElementById('f-house-tr').value),en:s(document.getElementById('f-house-en').value)},
+    title:{tr:s(document.getElementById('f-title-tr').value),en:s(document.getElementById('f-title-en').value)},
+    birth:{tr:s(document.getElementById('f-birth-tr').value),en:s(document.getElementById('f-birth-en').value)},
+    alleg:{tr:s(document.getElementById('f-alleg-tr').value),en:s(document.getElementById('f-alleg-en').value)},
+    bio:{tr:s(document.getElementById('f-bio-tr').value),en:s(document.getElementById('f-bio-en').value)},
+    quote:{tr:s(document.getElementById('f-quote-tr').value),en:s(document.getElementById('f-quote-en').value)},
+    epi:{tr:s(document.getElementById('f-epi-tr').value),en:s(document.getElementById('f-epi-en').value)},
+    allies:arr(document.getElementById('f-allies').value),
+    enemies:arr(document.getElementById('f-enemies').value),
+    chapters:arr(document.getElementById('f-chapters').value),
+    image:document.getElementById('f-image').value||''
+  };
+  if(editingId){const i=CHARS.findIndex(c=>c.id===editingId);if(i>=0)CHARS[i]=nc;}
+  else{if(CHARS.find(c=>c.id===id)){toast('Bu ID zaten mevcut','err');return;} CHARS.push(nc);}
+  markPendingChars(); renderCharList(); renderDashboard();
+  toast(editingId?'Karakter güncellendi ✔':'Karakter eklendi ✔');
+  clearForm(); openSection('chars');
+}
+function deleteChar(){
+  if(!editingId)return;
+  if(!confirm('"'+editingId+'" silinsin mi?'))return;
+  CHARS=CHARS.filter(c=>c.id!==editingId);
+  markPendingChars(); renderCharList(); renderDashboard();
+  toast('Karakter silindi'); clearForm(); openSection('chars');
+}
+document.getElementById('photo-input').addEventListener('change',function(){
+  const file=this.files[0]; if(!file)return;
+  if(file.size>2*1024*1024){toast('Dosya 2 MB\'dan büyük','err');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const b64=e.target.result;
+    document.getElementById('f-image').value=b64;
+    const img=document.getElementById('photo-preview');
+    img.src=b64; img.style.display='block';
+    document.getElementById('photo-label').style.display='none';
+    document.getElementById('photo-hint').textContent='Yeni fotoğraf (base64)';
+    const imgPath='assets/images/characters/'+(editingId||document.getElementById('f-id').value||'new')+'.'+file.name.split('.').pop();
+    PENDING['__img__'+imgPath]=b64;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ══════════ ALINTI ════════════════════════════════════ */
+function renderQuoteList(q=''){
+  const tbl=document.getElementById('quote-tbody');
+  document.getElementById('quote-count').textContent=QUOTES.length;
+  const fl=q?QUOTES.filter(x=>(x.text?.tr||''+x.speaker?.tr||'').toLowerCase().includes(q.toLowerCase())):QUOTES;
+  tbl.innerHTML=fl.map((qt,i)=>`
+    <tr>
+      <td class="td-meta">${i+1}</td>
+      <td><div class="quote-text">${esc(qt.text?.tr||'')}</div></td>
+      <td class="td-meta">${esc(qt.speaker?.tr||'—')}</td>
+      <td class="td-meta">${esc(qt.theme||'—')}</td>
+      <td class="td-actions">
+        <button class="act-btn" onclick="editQuote(${QUOTES.indexOf(qt)})">✎</button>
+        <button class="act-btn del" onclick="deleteQuoteAt(${QUOTES.indexOf(qt)})">✕</button>
+      </td>
+    </tr>`).join('')||'<tr><td colspan="5" style="color:var(--parchd);font-style:italic;padding:1rem">Alıntı yok.</td></tr>';
+}
+document.getElementById('quote-search').addEventListener('input',function(){renderQuoteList(this.value);});
+
+let editingQuoteIdx=null;
+function clearQuoteForm(){
+  editingQuoteIdx=null;
+  ['qf-text-tr','qf-text-en','qf-speaker-tr','qf-speaker-en'].forEach(k=>document.getElementById(k).value='');
+  document.getElementById('qf-theme').value='kader';
+  document.getElementById('q-delete-btn').style.display='none';
+  document.getElementById('quote-form-title').textContent='Yeni Alıntı';
+}
+function editQuote(idx){
+  clearQuoteForm(); editingQuoteIdx=idx;
+  const qt=QUOTES[idx]; if(!qt)return;
+  document.getElementById('quote-form-title').textContent='Alıntıyı Düzenle';
+  document.getElementById('qf-text-tr').value=qt.text?.tr||'';
+  document.getElementById('qf-text-en').value=qt.text?.en||'';
+  document.getElementById('qf-speaker-tr').value=qt.speaker?.tr||'';
+  document.getElementById('qf-speaker-en').value=qt.speaker?.en||'';
+  document.getElementById('qf-theme').value=qt.theme||'kader';
+  document.getElementById('q-delete-btn').style.display='inline-block';
+  openSection('new-quote');
+}
+function saveQuote(){
+  const nq={
+    text:{tr:s(document.getElementById('qf-text-tr').value),en:s(document.getElementById('qf-text-en').value)},
+    speaker:{tr:s(document.getElementById('qf-speaker-tr').value),en:s(document.getElementById('qf-speaker-en').value)},
+    theme:document.getElementById('qf-theme').value
+  };
+  if(!nq.text.tr){toast('Alıntı metni boş olamaz','err');return;}
+  if(editingQuoteIdx!==null) QUOTES[editingQuoteIdx]=nq;
+  else QUOTES.push(nq);
+  markPendingQuotes(); renderQuoteList(); renderDashboard();
+  toast(editingQuoteIdx!==null?'Alıntı güncellendi ✔':'Alıntı eklendi ✔');
+  clearQuoteForm(); openSection('quotes');
+}
+function deleteQuote(){
+  if(editingQuoteIdx===null)return;
+  if(!confirm('Bu alıntı silinsin mi?'))return;
+  QUOTES.splice(editingQuoteIdx,1);
+  markPendingQuotes(); renderQuoteList(); renderDashboard();
+  toast('Alıntı silindi'); clearQuoteForm(); openSection('quotes');
+}
+function deleteQuoteAt(idx){
+  if(!confirm('Bu alıntı silinsin mi?'))return;
+  QUOTES.splice(idx,1);
+  markPendingQuotes(); renderQuoteList(); renderDashboard(); toast('Alıntı silindi');
+}
+
+/* ══════════ BÖLÜMLER ══════════════════════════════════ */
+function renderChapterList(){
+  const tbl=document.getElementById('chapter-tbody');
+  document.getElementById('chapter-count').textContent=CHAPTERS.length;
+  const sorted=[...CHAPTERS].sort((a,b)=>a.id-b.id);
+  tbl.innerHTML=sorted.map(c=>`
+    <tr>
+      <td class="td-meta">${c.num||c.id}</td>
+      <td class="td-name">${esc(c.title?.tr||'—')}</td>
+      <td class="td-meta" style="max-width:200px;white-space:normal">${esc(c.pov?.tr||'—')}</td>
+      <td class="td-meta">${esc(c.ks||'—')}</td>
+      <td><span class="ch-badge ${c.free?'free':'locked'}">${c.free?'Ücretsiz':'Kilitli'}</span></td>
+      <td class="td-actions">
+        <button class="act-btn" onclick="editChapter(${c.id})">✎</button>
+        <button class="act-btn del" onclick="deleteChapterAt(${c.id})">✕</button>
+      </td>
+    </tr>`).join('')||'<tr><td colspan="6" style="color:var(--parchd);font-style:italic;padding:1rem">Bölüm yok.</td></tr>';
+}
+
+let editingChapterId=null;
+function clearChapterForm(){
+  editingChapterId=null;
+  ['cf-id','cf-num','cf-title-tr','cf-title-en','cf-pov-tr','cf-pov-en','cf-ks','cf-syn-tr','cf-syn-en','cf-first'].forEach(k=>document.getElementById(k).value='');
+  document.getElementById('cf-arc').value='1';
+  document.getElementById('cf-free').value='true';
+  document.getElementById('ch-delete-btn').style.display='none';
+  document.getElementById('chap-form-title').textContent='Yeni Bölüm';
+  document.getElementById('cf-id').disabled=false;
+}
+function editChapter(id){
+  clearChapterForm(); editingChapterId=id;
+  const c=CHAPTERS.find(x=>x.id===id); if(!c)return;
+  document.getElementById('chap-form-title').textContent='Bölümü Düzenle';
+  document.getElementById('cf-id').value=c.id; document.getElementById('cf-id').disabled=true;
+  document.getElementById('cf-num').value=c.num||'';
+  document.getElementById('cf-arc').value=c.arc||1;
+  document.getElementById('cf-free').value=c.free?'true':'false';
+  document.getElementById('cf-title-tr').value=c.title?.tr||'';
+  document.getElementById('cf-title-en').value=c.title?.en||'';
+  document.getElementById('cf-pov-tr').value=c.pov?.tr||'';
+  document.getElementById('cf-pov-en').value=c.pov?.en||'';
+  document.getElementById('cf-ks').value=c.ks||'';
+  document.getElementById('cf-syn-tr').value=c.synopsis?.tr||'';
+  document.getElementById('cf-syn-en').value=c.synopsis?.en||'';
+  document.getElementById('cf-first').value=c.firstLine||'';
+  document.getElementById('ch-delete-btn').style.display='inline-block';
+  openSection('new-chapter');
+}
+function saveChapter(){
+  const rawId=editingChapterId!==null?editingChapterId:parseInt(document.getElementById('cf-id').value);
+  if(!rawId||isNaN(rawId)){toast('Geçerli bir numara gir','err');return;}
+  const nc={
+    id:rawId,
+    arc:parseInt(document.getElementById('cf-arc').value)||1,
+    free:document.getElementById('cf-free').value==='true',
+    num:s(document.getElementById('cf-num').value),
+    title:{tr:s(document.getElementById('cf-title-tr').value),en:s(document.getElementById('cf-title-en').value)},
+    pov:{tr:s(document.getElementById('cf-pov-tr').value),en:s(document.getElementById('cf-pov-en').value)},
+    ks:s(document.getElementById('cf-ks').value),
+    synopsis:{tr:s(document.getElementById('cf-syn-tr').value),en:s(document.getElementById('cf-syn-en').value)},
+    firstLine:s(document.getElementById('cf-first').value)
+  };
+  if(editingChapterId!==null){const i=CHAPTERS.findIndex(c=>c.id===editingChapterId);if(i>=0)CHAPTERS[i]=nc;}
+  else{if(CHAPTERS.find(c=>c.id===rawId)){toast('Bu bölüm numarası zaten mevcut','err');return;} CHAPTERS.push(nc);}
+  markPendingChapters(); renderChapterList(); renderDashboard();
+  toast(editingChapterId!==null?'Bölüm güncellendi ✔':'Bölüm eklendi ✔');
+  clearChapterForm(); openSection('chapters');
+}
+function deleteChapter(){
+  if(editingChapterId===null)return;
+  if(!confirm('Bu bölüm silinsin mi?'))return;
+  CHAPTERS=CHAPTERS.filter(c=>c.id!==editingChapterId);
+  markPendingChapters(); renderChapterList(); renderDashboard();
+  toast('Bölüm silindi'); clearChapterForm(); openSection('chapters');
+}
+function deleteChapterAt(id){
+  if(!confirm('Bu bölüm silinsin mi?'))return;
+  CHAPTERS=CHAPTERS.filter(c=>c.id!==id);
+  markPendingChapters(); renderChapterList(); renderDashboard(); toast('Bölüm silindi');
+}
+
+/* ══════════ LORE: TERİMLER ════════════════════════════ */
+function renderGlossList(q=''){
+  const tbl=document.getElementById('gloss-tbody');
+  document.getElementById('gloss-count').textContent=GLOSSARY.length;
+  const fl=q?GLOSSARY.filter(x=>(x.term?.tr||''+x.id||'').toLowerCase().includes(q.toLowerCase())):GLOSSARY;
+  tbl.innerHTML=fl.map(g=>`
+    <tr>
+      <td class="td-meta">${esc(g.id||'')}</td>
+      <td class="td-name">${esc(g.term?.tr||'—')}</td>
+      <td class="td-meta">${esc(g.type||'—')}</td>
+      <td class="td-meta" style="max-width:300px;white-space:normal">${esc((g.def?.tr||'').substring(0,100))}${(g.def?.tr||'').length>100?'…':''}</td>
+      <td class="td-actions">
+        <button class="act-btn" onclick="editTerm('${g.id}')">✎</button>
+        <button class="act-btn del" onclick="deleteTermAt('${g.id}')">✕</button>
+      </td>
+    </tr>`).join('')||'<tr><td colspan="5" style="color:var(--parchd);font-style:italic;padding:1rem">Terim yok.</td></tr>';
+}
+document.getElementById('gloss-search').addEventListener('input',function(){renderGlossList(this.value);});
+
+let editingTermId=null;
+function clearTermForm(){
+  editingTermId=null;
+  ['tf-id','tf-term-tr','tf-term-en','tf-def-tr','tf-def-en'].forEach(k=>document.getElementById(k).value='');
+  document.getElementById('tf-type').value='geo';
+  document.getElementById('tf-delete-btn').style.display='none';
+  document.getElementById('term-form-title').textContent='Yeni Terim';
+  document.getElementById('tf-id').disabled=false;
+}
+function editTerm(id){
+  clearTermForm(); editingTermId=id;
+  const g=GLOSSARY.find(x=>x.id===id); if(!g)return;
+  document.getElementById('term-form-title').textContent='Terimi Düzenle';
+  document.getElementById('tf-id').value=g.id; document.getElementById('tf-id').disabled=true;
+  document.getElementById('tf-type').value=g.type||'geo';
+  document.getElementById('tf-term-tr').value=g.term?.tr||'';
+  document.getElementById('tf-term-en').value=g.term?.en||'';
+  document.getElementById('tf-def-tr').value=g.def?.tr||'';
+  document.getElementById('tf-def-en').value=g.def?.en||'';
+  document.getElementById('tf-delete-btn').style.display='inline-block';
+  openSection('new-term');
+}
+function saveTerm(){
+  const id=editingTermId||s(document.getElementById('tf-id').value).toLowerCase().replace(/\s+/g,'-');
+  if(!id){toast('ID boş olamaz','err');return;}
+  const ng={id,type:document.getElementById('tf-type').value,
+    term:{tr:s(document.getElementById('tf-term-tr').value),en:s(document.getElementById('tf-term-en').value)},
+    def:{tr:s(document.getElementById('tf-def-tr').value),en:s(document.getElementById('tf-def-en').value)}
+  };
+  if(editingTermId){const i=GLOSSARY.findIndex(g=>g.id===editingTermId);if(i>=0)GLOSSARY[i]=ng;}
+  else{if(GLOSSARY.find(g=>g.id===id)){toast('Bu ID zaten mevcut','err');return;} GLOSSARY.push(ng);}
+  markPendingLore(); renderGlossList(); renderDashboard();
+  toast(editingTermId?'Terim güncellendi ✔':'Terim eklendi ✔');
+  clearTermForm(); openSection('glossary');
+}
+function deleteTerm(){
+  if(editingTermId===null)return;
+  if(!confirm('Bu terim silinsin mi?'))return;
+  GLOSSARY=GLOSSARY.filter(g=>g.id!==editingTermId);
+  markPendingLore(); renderGlossList(); renderDashboard();
+  toast('Terim silindi'); clearTermForm(); openSection('glossary');
+}
+function deleteTermAt(id){
+  if(!confirm('Bu terim silinsin mi?'))return;
+  GLOSSARY=GLOSSARY.filter(g=>g.id!==id);
+  markPendingLore(); renderGlossList(); renderDashboard(); toast('Terim silindi');
+}
+
+/* ══════════ KRONOLOJİ ════════════════════════════════ */
+function renderEventList(q=''){
+  const tbl=document.getElementById('event-tbody');
+  document.getElementById('event-count').textContent=EVENTS.length;
+  const fl=q?EVENTS.filter(x=>(x.name?.tr||'').toLowerCase().includes(q.toLowerCase())):EVENTS;
+  tbl.innerHTML=fl.map((ev,i)=>`
+    <tr>
+      <td class="td-meta" style="white-space:nowrap">KS ${esc(ev.ks||'?')}</td>
+      <td class="td-name">${esc(ev.name?.tr||'—')}</td>
+      <td class="td-meta">${esc(ev.type||'—')}</td>
+      <td class="td-meta" style="max-width:280px;white-space:normal">${esc((ev.desc?.tr||'').substring(0,80))}${(ev.desc?.tr||'').length>80?'…':''}</td>
+      <td class="td-actions">
+        <button class="act-btn" onclick="editEvent(${EVENTS.indexOf(ev)})">✎</button>
+        <button class="act-btn del" onclick="deleteEventAt(${EVENTS.indexOf(ev)})">✕</button>
+      </td>
+    </tr>`).join('')||'<tr><td colspan="5" style="color:var(--parchd);font-style:italic;padding:1rem">Olay yok.</td></tr>';
+}
+document.getElementById('event-search').addEventListener('input',function(){renderEventList(this.value);});
+
+let editingEventIdx=null;
+function clearEventForm(){
+  editingEventIdx=null;
+  ['ef-ks','ef-name-tr','ef-name-en','ef-desc-tr','ef-desc-en'].forEach(k=>document.getElementById(k).value='');
+  document.getElementById('ef-type').value='ruler';
+  document.getElementById('ef-delete-btn').style.display='none';
+  document.getElementById('event-form-title').textContent='Yeni Olay';
+}
+function editEvent(idx){
+  clearEventForm(); editingEventIdx=idx;
+  const ev=EVENTS[idx]; if(!ev)return;
+  document.getElementById('event-form-title').textContent='Olayı Düzenle';
+  document.getElementById('ef-ks').value=ev.ks||'';
+  document.getElementById('ef-type').value=ev.type||'ruler';
+  document.getElementById('ef-name-tr').value=ev.name?.tr||'';
+  document.getElementById('ef-name-en').value=ev.name?.en||'';
+  document.getElementById('ef-desc-tr').value=ev.desc?.tr||'';
+  document.getElementById('ef-desc-en').value=ev.desc?.en||'';
+  document.getElementById('ef-delete-btn').style.display='inline-block';
+  openSection('new-event');
+}
+function saveEvent(){
+  const nev={
+    ks:s(document.getElementById('ef-ks').value),
+    type:document.getElementById('ef-type').value,
+    name:{tr:s(document.getElementById('ef-name-tr').value),en:s(document.getElementById('ef-name-en').value)},
+    desc:{tr:s(document.getElementById('ef-desc-tr').value),en:s(document.getElementById('ef-desc-en').value)}
+  };
+  if(!nev.name.tr){toast('Olay adı boş olamaz','err');return;}
+  if(editingEventIdx!==null) EVENTS[editingEventIdx]=nev;
+  else EVENTS.push(nev);
+  markPendingLore(); renderEventList(); renderDashboard();
+  toast(editingEventIdx!==null?'Olay güncellendi ✔':'Olay eklendi ✔');
+  clearEventForm(); openSection('events');
+}
+function deleteEvent(){
+  if(editingEventIdx===null)return;
+  if(!confirm('Bu olay silinsin mi?'))return;
+  EVENTS.splice(editingEventIdx,1);
+  markPendingLore(); renderEventList(); renderDashboard();
+  toast('Olay silindi'); clearEventForm(); openSection('events');
+}
+function deleteEventAt(idx){
+  if(!confirm('Bu olay silinsin mi?'))return;
+  EVENTS.splice(idx,1);
+  markPendingLore(); renderEventList(); renderDashboard(); toast('Olay silindi');
+}
+
+/* ══ GITHUB API ════════════════════════════════════════ */
+function getGHCfg(){
+  return {
+    user: document.getElementById('gh-user').value.trim()||localStorage.getItem('gh-user')||'',
+    repo: document.getElementById('gh-repo').value.trim()||localStorage.getItem('gh-repo')||'',
+    token: document.getElementById('gh-token').value.trim()||sessionStorage.getItem('gh-token')||''
+  };
+}
+function saveGHSettings(){ const {user,repo,token}=getGHCfg(); localStorage.setItem('gh-user',user); localStorage.setItem('gh-repo',repo); if(token)sessionStorage.setItem('gh-token',token); }
+function loadGHSettings(){ document.getElementById('gh-user').value=localStorage.getItem('gh-user')||''; document.getElementById('gh-repo').value=localStorage.getItem('gh-repo')||''; document.getElementById('gh-token').value=sessionStorage.getItem('gh-token')||''; }
+
+async function ghGet(path,cfg){ return fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${path}`,{headers:{'Authorization':'token '+cfg.token,'Accept':'application/vnd.github.v3+json'}}); }
+async function ghPut(path,content,sha,msg,cfg){
+  const body={message:msg,content:btoa(unescape(encodeURIComponent(content)))};
+  if(sha)body.sha=sha;
+  return fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${path}`,{method:'PUT',headers:{'Authorization':'token '+cfg.token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+}
+function setGHStatus(ok,text){ const dot=document.getElementById('gh-dot'); dot.className='gh-dot '+(ok===true?'ok':ok===false?'err':'idle'); document.getElementById('gh-status-text').textContent=text; }
+function addLog(msg,type='info'){ const log=document.getElementById('commit-log'); log.style.display='block'; log.innerHTML+=`<div class="commit-entry ${type}">${msg}</div>`; log.scrollTop=log.scrollHeight; }
+
+async function testGH(){
+  const cfg=getGHCfg(); saveGHSettings();
+  if(!cfg.user||!cfg.repo||!cfg.token){setGHStatus(false,'Kullanıcı adı, repo ve token gerekli.');return;}
+  setGHStatus('idle','Test ediliyor…');
+  const r=await ghGet('data/characters.json',cfg);
+  if(r.ok)setGHStatus(true,'Bağlantı başarılı ✔');
+  else setGHStatus(false,'Hata: '+r.status);
+}
+
+async function commitAll(){
+  const cfg=getGHCfg(); saveGHSettings();
+  if(!cfg.user||!cfg.repo||!cfg.token){toast('GitHub ayarları eksik','err');openSection('commit');return;}
+  if(!Object.keys(PENDING).length){toast('Bekleyen değişiklik yok');return;}
+  document.getElementById('commit-log').innerHTML='';
+  addLog('Commit başlatılıyor… ('+Object.keys(PENDING).length+' dosya)');
+
+  for(const [path,content] of Object.entries(PENDING)){
+    if(path.startsWith('__img__')){
+      const imgPath=path.replace('__img__','');
+      addLog('📷 Görsel: '+imgPath);
+      try{
+        const getR=await ghGet(imgPath,cfg);
+        const sha=getR.ok?(await getR.json()).sha:null;
+        const raw=content.split(',')[1];
+        const putR=await fetch(`https://api.github.com/repos/${cfg.user}/${cfg.repo}/contents/${imgPath}`,{method:'PUT',headers:{'Authorization':'token '+cfg.token,'Content-Type':'application/json'},body:JSON.stringify({message:'feat: add image '+imgPath,content:raw,...(sha?{sha}:{})})});
+        addLog(putR.ok?'✔ '+imgPath+'  yüklendi':'✗ '+imgPath+' — '+putR.status, putR.ok?'ok':'err');
+      }catch(e){addLog('✗ Görsel hatası: '+e.message,'err');}
+      continue;
+    }
+    addLog('📄 '+path+'…');
+    try{
+      const getR=await ghGet(path,cfg);
+      const sha=getR.ok?(await getR.json()).sha:null;
+      const putR=await ghPut(path,content,sha,'feat: update '+path+' via admin panel',cfg);
+      if(putR.ok){addLog('✔ '+path+' commit edildi','ok'); delete PENDING[path];}
+      else addLog('✗ '+path+' — '+putR.status,'err');
+    }catch(e){addLog('✗ '+path+': '+e.message,'err');}
+  }
+  updatePendingCount();
+  addLog('İşlem tamamlandı.');
+  toast('GitHub commit tamamlandı ✔');
+}
+
+/* Boot */
+if(isAuthed()) initAdmin();
+</script>
+</body>
+</html>

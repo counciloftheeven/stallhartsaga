@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harita · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+html, body { height: 100%; overflow: hidden; background: #050308; }
+body { display: flex; flex-direction: column; }
+nav { flex-shrink: 0; }
+.map-outer {
+  flex: 1; overflow: hidden; position: relative;
+  cursor: grab; background: #050308;
+}
+.map-outer.dragging { cursor: grabbing; }
+.map-inner { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+.map-wrap  { position: relative; display: block; line-height: 0; }
+.map-wrap img { display: block; }
+.map-wrap svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: all; }
+
+/* ── BÖLGE SINIRLI POLİGONLAR ── */
+.rgn { cursor: pointer; stroke-width: 8; transition: fill .18s, stroke .18s, stroke-width .18s; }
+.rgn[data-r="khasinia"]   { fill: rgba(140,90,50,.18);  stroke: #7A5030; }
+.rgn[data-r="adamen"]     { fill: rgba(80,150,100,.16); stroke: #3A7A50; }
+.rgn[data-r="zela"]       { fill: rgba(40,100,125,.18); stroke: #2A6A85; }
+.rgn[data-r="galetsha"]   { fill: rgba(90,55,25,.22);   stroke: #6A3D14; }
+.rgn[data-r="highsanjak"] { fill: rgba(180,140,20,.15); stroke: #9A7810; }
+.rgn[data-r="memanth"]    { fill: rgba(100,65,145,.18); stroke: #6A4A9A; }
+.rgn[data-r="onneva"]     { fill: rgba(110,155,40,.16); stroke: #5A8010; }
+.rgn[data-r="solgar"]     { fill: rgba(175,80,20,.18);  stroke: #9A4A10; }
+.rgn[data-r="seltania"]   { fill: rgba(30,155,155,.16); stroke: #158A8A; }
+.rgn[data-r="sanctuary"]  { fill: rgba(175,40,100,.18); stroke: #8A1A55; }
+.rgn[data-r="shelia"]     { fill: rgba(130,100,55,.18); stroke: #7A5828; }
+.rgn[data-r="pilkkard"]   { fill: rgba(110,140,165,.16);stroke: #5A7A95; }
+
+/* Hover */
+.rgn[data-r="khasinia"]:hover   { fill:rgba(140,90,50,.44);  stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="adamen"]:hover     { fill:rgba(80,150,100,.42); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="zela"]:hover       { fill:rgba(40,100,125,.44); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="galetsha"]:hover   { fill:rgba(90,55,25,.50);   stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="highsanjak"]:hover { fill:rgba(180,140,20,.42); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="memanth"]:hover    { fill:rgba(100,65,145,.44); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="onneva"]:hover     { fill:rgba(110,155,40,.42); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="solgar"]:hover     { fill:rgba(175,80,20,.44);  stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="seltania"]:hover   { fill:rgba(30,155,155,.42); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="sanctuary"]:hover  { fill:rgba(175,40,100,.44); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="shelia"]:hover     { fill:rgba(130,100,55,.44); stroke:#C4962A; stroke-width:14; }
+.rgn[data-r="pilkkard"]:hover   { fill:rgba(110,140,165,.42);stroke:#C4962A; stroke-width:14; }
+
+/* Aktif / seçili */
+.rgn.active { stroke:#E8B84B !important; stroke-width:20 !important; filter:drop-shadow(0 0 10px rgba(232,184,75,.45)); }
+
+/* ── ETİKETLER ── */
+.rlabel { font-family:'IM Fell English',serif; font-style:italic; fill:rgba(240,230,200,.78); pointer-events:none; text-anchor:middle; dominant-baseline:middle; letter-spacing:1px; }
+.rl-main { font-size:72px; }
+.rl-sub  { font-size:44px; fill:rgba(196,150,42,.75); }
+.capital-star { fill:#E8B84B; filter:drop-shadow(0 0 6px rgba(232,184,75,.8)); }
+
+/* ── TOOLTIP ── */
+.map-tip { position:fixed; background:rgba(8,5,2,.97); border:1px solid var(--goldd); padding:.35rem .9rem; font-family:'IM Fell English',serif; font-size:.8rem; font-style:italic; color:var(--parchl); pointer-events:none; z-index:300; display:none; white-space:nowrap; backdrop-filter:blur(6px); box-shadow:0 4px 20px rgba(0,0,0,.5); }
+
+/* ── ARAÇ ÇUBUĞU ── */
+.toolbar { position:absolute; top:1rem; left:1rem; z-index:150; display:flex; flex-direction:column; gap:.4rem; }
+.tb { width:36px; height:36px; background:rgba(6,4,2,.92); border:1px solid var(--border); color:var(--parchd); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:.18s; backdrop-filter:blur(4px); }
+.tb:hover { border-color:var(--goldd); color:var(--gold); }
+.tb svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
+
+/* ── LEJANT ── */
+.legend { position:absolute; bottom:1rem; left:1rem; z-index:150; background:rgba(6,4,2,.92); border:1px solid var(--border); padding:.7rem 1rem; backdrop-filter:blur(6px); max-height:calc(100vh - 120px); overflow-y:auto; }
+.legend-title { font-family:'IM Fell English',serif; font-style:italic; font-size:.66rem; color:var(--goldd); letter-spacing:.1em; margin-bottom:.5rem; text-transform:uppercase; }
+.leg-item { display:flex; align-items:center; gap:.5rem; margin-bottom:.28rem; cursor:pointer; transition:opacity .15s; }
+.leg-item:hover { opacity:.75; }
+.leg-dot { width:10px; height:10px; flex-shrink:0; border:1px solid rgba(255,255,255,.12); }
+.leg-name { font-size:.7rem; color:var(--parchd); font-family:'IM Fell English',serif; font-style:italic; }
+
+/* ── BİLGİ PANELİ ── */
+.ipanel { position:absolute; top:0; right:0; bottom:0; width:320px; background:rgba(5,3,1,.98); border-left:1px solid var(--border); transform:translateX(100%); transition:transform .28s ease; z-index:100; overflow-y:auto; backdrop-filter:blur(10px); display:flex; flex-direction:column; }
+.ipanel.open { transform:translateX(0); }
+.ip-header { padding:1.5rem 1.5rem 1.1rem; border-bottom:1px solid var(--border); position:sticky; top:0; background:rgba(5,3,1,.99); z-index:2; flex-shrink:0; }
+.ip-close { position:absolute; top:.9rem; right:.9rem; background:none; border:1px solid transparent; color:var(--parchd); cursor:pointer; font-size:1rem; width:26px; height:26px; display:flex; align-items:center; justify-content:center; transition:.18s; }
+.ip-close:hover { color:var(--gold); border-color:var(--border); }
+.ip-eye { font-family:'IM Fell English',serif; font-size:.63rem; letter-spacing:.18em; color:var(--goldd); font-style:italic; margin-bottom:.3rem; text-transform:uppercase; }
+.ip-color-bar { height:2px; margin-bottom:.65rem; border-radius:1px; }
+.ip-name { font-family:'IM Fell English',serif; font-size:1.35rem; color:var(--parchl); line-height:1.15; margin-bottom:.2rem; }
+.ip-capital { font-size:.78rem; font-style:italic; color:var(--gold); }
+.ip-body { padding:1.1rem 1.5rem 2rem; flex:1; }
+.ip-sl { font-family:'IM Fell English',serif; font-size:.61rem; letter-spacing:.14em; color:var(--goldd); margin-bottom:.35rem; margin-top:1rem; text-transform:uppercase; }
+.ip-sl:first-child { margin-top:0; }
+.ip-house { display:inline-block; font-family:'IM Fell English',serif; font-size:.75rem; border:1px solid var(--borderl); padding:.18rem .6rem; color:var(--parch); font-style:italic; }
+.ip-desc { font-size:.83rem; color:var(--parchd); line-height:1.78; font-style:italic; }
+.ip-tags { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.45rem; }
+.iptag { font-family:'IM Fell English',serif; font-size:.67rem; padding:.16rem .5rem; border:1px solid var(--border); color:var(--parchd); font-style:italic; }
+.ip-chars { display:flex; flex-direction:column; gap:.15rem; margin-top:.4rem; }
+.ip-char-link { font-family:'IM Fell English',serif; font-size:.75rem; font-style:italic; color:var(--parchd); padding:.28rem .35rem; border-bottom:1px solid rgba(61,42,20,.3); text-decoration:none; transition:color .15s; display:flex; align-items:baseline; gap:.4rem; }
+.ip-char-link:hover { color:var(--gold); }
+.ip-char-link::before { content:'›'; color:var(--goldd); font-size:.9rem; flex-shrink:0; }
+.ip-char-plain { font-family:'IM Fell English',serif; font-size:.75rem; font-style:italic; color:var(--parchd); padding:.28rem .35rem; border-bottom:1px solid rgba(61,42,20,.3); display:flex; align-items:baseline; gap:.4rem; }
+.ip-char-plain::before { content:'·'; color:var(--border); flex-shrink:0; }
+.ip-char-role { font-size:.68rem; color:var(--goldd); }
+.ip-lore-link { display:inline-flex; align-items:center; gap:.4rem; font-family:'IM Fell English',serif; font-style:italic; font-size:.74rem; color:var(--goldd); text-decoration:none; transition:.15s; margin-top:.85rem; border:1px solid var(--border); padding:.28rem .7rem; }
+.ip-lore-link:hover { color:var(--gold); border-color:var(--goldd); }
+
+/* ── İPUCU ── */
+.hint { position:absolute; top:1rem; left:50%; transform:translateX(-50%); z-index:150; font-family:'IM Fell English',serif; font-size:.7rem; font-style:italic; color:var(--parchd); background:rgba(6,4,2,.82); border:1px solid var(--border); padding:.3rem .85rem; pointer-events:none; white-space:nowrap; transition:opacity 1.2s; backdrop-filter:blur(4px); }
+.hint.gone { opacity:0; }
+.map-loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'IM Fell English',serif; font-style:italic; color:var(--goldd); font-size:1rem; z-index:50; text-align:center; padding:2rem; }
+
+@media (max-width:600px) { .ipanel { width:100%; } .legend { display:none; } }
+</style>
+</head>
+<body>
+
+<div class="map-outer" id="outer">
+  <div class="map-loading" id="loading">Harita yükleniyor…<br><small style="font-size:.7rem;margin-top:.5rem;display:block;color:var(--border)">assets/images/SIYASI_HARITA.png</small></div>
+
+  <div class="map-inner" id="inner">
+    <div class="map-wrap" id="wrap">
+      <img id="map-img" src="assets/images/SIYASI_HARITA.png"
+           alt="Stallhart İmparatorluğu Siyasi Haritası"
+           onload="onImgLoad()" onerror="onImgError()">
+
+      <svg id="map-svg" viewBox="0 0 5848 4304" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- POLİGONLAR -->
+        <polygon class="rgn" data-r="khasinia"   points="75,150 740,150 820,830 440,990 75,705"/>
+        <polygon class="rgn" data-r="adamen"     points="895,0 2260,0 2200,600 2055,1700 1455,1545 895,625"/>
+        <polygon class="rgn" data-r="zela"       points="1525,525 3115,440 3185,1350 3065,2200 2945,3210 2330,3395 1825,3065 1525,2260 1525,1110"/>
+        <polygon class="rgn" data-r="galetsha"   points="2585,0 4265,0 4400,445 4095,1150 3570,1255 3120,1095 2830,625"/>
+        <polygon class="rgn" data-r="highsanjak" points="2830,625 3120,1095 3570,1255 4095,1150 4400,445 4745,0 5155,0 5435,910 5770,1720 5565,2665 5085,3075 4330,3175 3710,3175 3150,2650 3065,2200 3185,1350"/>
+        <polygon class="rgn" data-r="memanth"    points="4745,0 5848,0 5848,2710 5565,2665 5770,1720 5435,910"/>
+        <polygon class="rgn" data-r="onneva"     points="5085,3075 5848,2710 5848,4210 4470,4304 3275,4065 3110,3595 3710,3175 4330,3175"/>
+        <polygon class="rgn" data-r="solgar"     points="1730,1130 3115,1095 3185,1350 3065,2200 2855,3210 2060,3380 1730,2950 1730,2015"/>
+        <polygon class="rgn" data-r="seltania"   points="110,2075 1730,2075 1730,2950 1635,3470 1030,3875 310,3735 80,3075"/>
+        <polygon class="rgn" data-r="sanctuary"  points="0,2875 990,2835 935,3790 715,4304 0,4304"/>
+        <polygon class="rgn" data-r="shelia"     points="990,3180 3110,3180 3140,3760 2785,4304 1335,4304 990,3780"/>
+        <polygon class="rgn" data-r="pilkkard"   points="3275,3900 5848,3900 5848,4304 3535,4304"/>
+
+        <!-- ETİKETLER -->
+        <text class="rlabel rl-main" x="430"  y="530" >Khasinia</text>
+        <text class="rlabel rl-main" x="1560" y="700" >Adamen</text>
+        <text class="rlabel rl-main" x="2220" y="1580">Z'ela</text>
+        <text class="rlabel rl-sub"  x="2220" y="1680">Garall ⚓</text>
+        <text class="rlabel rl-main" x="3380" y="490" >Galetsha</text>
+        <text class="rlabel rl-main" x="4480" y="1720">Başsancak</text>
+        <text class="rlabel rl-sub"  x="4480" y="1840">★ Arava</text>
+        <!-- Başkent yıldızı -->
+        <polygon class="capital-star" points="4480,1960 4496,2006 4544,2006 4508,2033 4522,2079 4480,2054 4438,2079 4452,2033 4416,2006 4464,2006"/>
+        <text class="rlabel rl-main" x="5460" y="1180">Memanth</text>
+        <text class="rlabel rl-sub"  x="5460" y="1290">Craber 🏰</text>
+        <text class="rlabel rl-main" x="4620" y="3650">Onneva</text>
+        <text class="rlabel rl-main" x="2380" y="2280">Solgar</text>
+        <text class="rlabel rl-main" x="900"  y="2700">Seltania</text>
+        <text class="rlabel rl-main" x="390"  y="3600">Sığınak</text>
+        <text class="rlabel rl-main" x="2040" y="3540">Selya</text>
+        <text class="rlabel rl-main" x="4520" y="4080">Pilkkard</text>
+
+      </svg>
+    </div>
+  </div>
+
+  <div class="map-tip" id="tip"></div>
+
+  <div class="toolbar">
+    <button class="tb" onclick="zoomBtn(0.7)" title="Yakınlaştır"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button class="tb" onclick="zoomBtn(1.43)" title="Uzaklaştır"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+    <button class="tb" onclick="resetView()" title="Sıfırla"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg></button>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="legend-title" id="leg-title">Eyaletler</div>
+    <div id="leg-items"></div>
+  </div>
+
+  <div class="hint" id="hint">Sürükle · Kaydır/Sıkıştır: zoom · Bölgeye tıkla: bilgi</div>
+
+  <div class="ipanel" id="ipanel">
+    <div class="ip-header">
+      <button class="ip-close" id="ip-close">✕</button>
+      <div class="ip-eye" id="ip-eye"></div>
+      <div class="ip-color-bar" id="ip-color-bar"></div>
+      <h2 class="ip-name" id="ip-name"></h2>
+      <p class="ip-capital" id="ip-capital"></p>
+    </div>
+    <div class="ip-body" id="ip-body"></div>
+  </div>
+</div>
+
+<script src="assets/js/wiki.js"></script>
+<script>
+const { Lang, initWiki, injectNav, esc } = Wiki;
+
+const REGIONS = {
+  khasinia:{color:'#8A5A32',name:{tr:'Khasinia / Khasinya',en:'Khasinia / Khasinya'},eye:{tr:'Doğu Adası',en:'Eastern Island'},capital:{tr:'★ Khasinya Kalesi',en:'★ Khasinya Fortress'},house:{tr:'Khasin Hanesi',en:'House Khasin'},desc:{tr:"I. Lun Aldris tarafından Safir Boğazı'ndaki deniz zaferinin ardından boyun eğdirilen ada. Güçlü deniz kültürü ve tarihî isyan eğilimiyle bilinir. İmparatorluğun en zorlu eyaletlerinden biridir.",en:"The island subdued by Lun Aldris I after the Sapphire Strait naval victory. Known for strong maritime culture and historical rebellious tendencies. Remains one of the empire's most challenging provinces."},tags:{tr:['Deniz Kültürü','Tarihsel İsyan','Khasin Hanesi'],en:['Maritime Culture','Historical Rebellion','House Khasin']},chars:[{name:'Yunghar Khasin',role:{tr:'Vali',en:'Governor'},id:null}],loreId:null},
+
+  adamen:{color:'#3A7A50',name:{tr:'Adamen',en:'Adamen'},eye:{tr:'Güneybatı Eyaleti',en:'Southwestern Province'},capital:{tr:'★ Adamen Madenleri',en:'★ Adamen Mines'},house:{tr:'Saert Hanesi (Cüce Vali)',en:'House Saert (Dwarf Governor)'},desc:{tr:'İmparatorluğun en büyük maden yataklarına ev sahipliği yapan eyalet. Cüce Vali Gulwar Saert işçi haklarını savunur. İlk Anne inancının en güçlü biçimde yaşadığı topraklar; madencilerin ninnileri hâlâ çınlar.',en:"Province home to the empire's largest mineral deposits. Dwarf Governor Gulwar Saert advocates for miners' rights. The land where the First Mother faith survives most strongly — in miners' lullabies."},tags:{tr:['Maden Yatakları','Cüce Nüfus','İlk Anne İzleri'],en:['Mineral Deposits','Dwarf Population','First Mother Traces']},chars:[{name:'Gulwar Saert',role:{tr:'Cüce Vali',en:'Dwarf Governor'},id:null}],loreId:null},
+
+  zela:{color:'#2A6A85',name:{tr:"Z'ela",en:"Z'ela"},eye:{tr:'Batı Eyaleti',en:'Western Province'},capital:{tr:'★ Garall Limanı ⚓',en:'★ Port of Garall ⚓'},house:{tr:'Çeşitli Haneler (Carvhen, İtrez…)',en:'Various Houses (Carvhen, Itrez…)'},desc:{tr:"Gümüş Yol Boğazı'nın kuzey yakasında Garall limanıyla kıtalar arası ticaretin merkezi. Eyaletin karmaşık haneler yapısı, merkezi otoritenin zayıfladığı dönemlerde ciddi baskı noktasına dönüşür.",en:"On the north bank of the Silver Way Strait, Port Garall is the center of intercontinental trade. The province's complex house structure becomes a major pressure point when central authority weakens."},tags:{tr:['Garall Limanı','Deniz Ticareti','Boğaz Kontrolü'],en:['Port of Garall','Maritime Trade','Strait Control']},chars:[{name:'Arba İtrez',role:{tr:"Z'ela Soylusu",en:"Z'ela Noble"},id:null}],loreId:'zela'},
+
+  galetsha:{color:'#6A3D14',name:{tr:'Galetsha',en:'Galetsha'},eye:{tr:'Kuzey Eyaleti',en:'Northern Province'},capital:{tr:'★ Galetsha Kalesi',en:'★ Galetsha Fortress'},house:{tr:'Galet / Galetsha Hanesi',en:'House Galet / Galetsha'},desc:{tr:"Sarp geçitleri ve stratejik mevzileriyle kuzeyin bekçisi. Wolrez Galet, Arathen casusu Eron Gjin ile ittifak kurarak Olinder Albea suikastını örgütledi — Erthan yayının fitilini ateşledi.",en:"Guardian of the north with treacherous passes. Wolrez Galet allied with Arathen spy Eron Gjin to orchestrate Olinder Albea's assassination — igniting the Erthan arc."},tags:{tr:['Sarp Dağlar','Stratejik Geçitler','Arathen İttifakı'],en:['Rugged Mountains','Strategic Passes','Arathen Alliance']},chars:[{name:'Wolrez Galet',role:{tr:'Galetsha Valisi',en:'Governor of Galetsha'},id:'wolrez-galet'},{name:'Metron Galetsha',role:{tr:'Eski Vali (Ölü)',en:'Former Governor (Deceased)'},id:null}],loreId:'galetsha'},
+
+  highsanjak:{color:'#9A7810',name:{tr:'High Sanjak / Başsancak',en:'High Sanjak / Başsancak'},eye:{tr:'Başkent Eyaleti',en:'Capital Province'},capital:{tr:'★ Arava — İmparatorluk Başkenti',en:'★ Arava — Imperial Capital'},house:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},desc:{tr:"İmparatorluğun kalbi. Stallhart sarayının bulunduğu Arava şehri tüm eyaletlerin siyasi odak noktasıdır. Karabıçaklar buradan yönetilir. Rones döneminde büyüyen şehir İmloth yönetiminde derin bir çürüme yaşadı.",en:"The empire's heart. Arava, seat of the Stallhart palace, is the political focal point. The Black Claws operate from here. The city grew under Rones but fell into deep rot under Imloth."},tags:{tr:['İmparatorluk Sarayı','Arava Şehri','Karabıçaklar Merkezi'],en:['Imperial Palace','City of Arava','Black Claws HQ']},chars:[{name:'Zeandor Stallhart',role:{tr:'İmparator (Tahtta)',en:'Emperor (On Throne)'},id:'zeandor'},{name:'Amadon Stallhart',role:{tr:'Eski İmparator',en:'Former Emperor'},id:'amadon'},{name:'Hilnor Wolde',role:{tr:'Baş Danışman',en:'Chief Advisor'},id:'hilnor-wolde'},{name:'Edun Solgar',role:{tr:'Sürgün Başvezir',en:'Exiled Grand Vizier'},id:'edun-solgar'}],loreId:'bassancak'},
+
+  memanth:{color:'#6A4A9A',name:{tr:'Memanth',en:'Memanth'},eye:{tr:'Kuzey Eyaleti',en:'Northern Province'},capital:{tr:'★ Craber Kalesi 🏰',en:'★ Craber Fortress 🏰'},house:{tr:'Sınglew Hanesi (önde gelen)',en:'House Sınglew (prominent)'},desc:{tr:"Kuzey sınır hattının kritik dayanak noktası. Craber Kalesi ve Arava Garnizonu bölgenin askerî omurgasını oluşturur. Reanloth'un sabırlı seferlerle ilhak ettiği eyalet, Erthan isyanında kritik savaş alanlarına ev sahipliği yaptı.",en:"Critical anchor of the northern frontier. Craber Fortress and Arava Garrison form the military backbone. Annexed by Reanloth through patient campaigns; hosted critical battlegrounds during Erthan's rebellion."},tags:{tr:['Craber Kalesi','Arava Garnizonu','Kuzey Sınırı'],en:['Craber Fortress','Arava Garrison','Northern Border']},chars:[{name:'Aertas Sınglew',role:{tr:'Doğu Sınırı Komutanı',en:'Eastern Border Commander'},id:'aertas-singlew'}],loreId:null},
+
+  onneva:{color:'#5A8010',name:{tr:'Onneva',en:'Onneva'},eye:{tr:'Doğu Eyaleti',en:'Eastern Province'},capital:{tr:'★ Onneva Limanı ⚓',en:'★ Port of Onneva ⚓'},house:{tr:'Onneva Hanesi',en:'House Onneva'},desc:{tr:"Gümüş Yol Boğazı'nın güneydoğu yakasında Todfa ve Gom Ara geçiş noktalarıyla stratejik değer taşır. İmparatorluk Donanması'nın kritik güney üssüdür.",en:"On the southeastern bank of the Silver Way Strait with the crossing points Todfa and Gom Ara. Critical southern base of the Imperial Navy."},tags:{tr:['Todfa Geçidi','Gom Ara','Deniz Üssü'],en:['Todfa Crossing','Gom Ara','Naval Base']},chars:[{name:'Irin Onneva',role:{tr:'Eski Yüksek Rahip (Ölü)',en:'Former High Priest (Deceased)'},id:null}],loreId:null},
+
+  solgar:{color:'#9A4A10',name:{tr:'Solgar',en:'Solgar'},eye:{tr:'Merkez Eyaleti',en:'Central Province'},capital:{tr:'★ Solgar Sarayı',en:'★ Solgar Palace'},house:{tr:'Solgar Hanesi',en:'House Solgar'},desc:{tr:"Edun Solgar'ın Zeandor tarafından sürgün edildiği eyalet. Bakırsu Vadisi bu topraklarda yer alır — Reun Solgar ordusunun imparatorluk tarihinin en ağır bozgunlarından birini yaşadığı yer.",en:"The province to which Edun Solgar was exiled by Zeandor. Bakırsu Valley lies in these lands — where Reun Solgar's army suffered one of the empire's most catastrophic defeats."},tags:{tr:["Edun Solgar'ın Sürgünü",'Bakırsu Vadisi','Bataklık Zenginlikleri'],en:["Edun Solgar's Exile",'Bakırsu Valley','Marsh Riches']},chars:[{name:'Edun Solgar',role:{tr:'Sürgün Başvezir',en:'Exiled Grand Vizier'},id:'edun-solgar'},{name:'Reun Solgar',role:{tr:'Yenilmiş Komutan',en:'Defeated Commander'},id:'reun-solgar'}],loreId:'solgar'},
+
+  seltania:{color:'#158A8A',name:{tr:'Seltania / Seltanya',en:'Seltania / Seltanya'},eye:{tr:'Güney Eyaleti',en:'Southern Province'},capital:{tr:'★ Seltanya Şehri',en:'★ City of Seltanya'},house:{tr:'Vizelar Hanesi (önde gelen)',en:'House Vizelar (prominent)'},desc:{tr:"Amadon'un iktidar üssünü inşa ettiği eyalet. Seltanya Meliki sıfatıyla Karabıçaklar'ı burada kurdu; buradan imparatorluk tahtına uzandı. Scifella'nın KS 1248–49 seferinde fethedilmişti.",en:"The province where Amadon built his power base. As Melik of Seltanya he founded the Black Claws here; from here he reached for the throne. Conquered by Scifella in KS 1248–49."},tags:{tr:["Amadon'un Üssü",'Karabıçaklar Kuruluşu','Güney Sınırı'],en:["Amadon's Base",'Black Claws Founded','Southern Border']},chars:[{name:'Amadon Stallhart',role:{tr:'Eski Melik',en:'Former Melik'},id:'amadon'}],loreId:'seltanya'},
+
+  sanctuary:{color:'#8A1A55',name:{tr:'The Sanctuary / Sığınak',en:'The Sanctuary'},eye:{tr:'Kutsal Topraklar',en:'Sacred Lands'},capital:{tr:'★ Sığınak Şehri',en:'★ Sanctuary City'},house:{tr:'Denge Konseyi',en:'Council of Balance'},desc:{tr:"İmparatorluğun en kutsal toprakları. Denge Konseyi'nin ruhani otoritesinin merkezi; tapınak kompleksleri ve kutsal törenleriyle imparatorluk üzerinde güçlü bir manevi etki kurar.",en:"The most sacred lands of the empire. Spiritual authority center of the Council of Balance; exercises powerful influence through its temple complexes and holy ceremonies."},tags:{tr:['Kutsal Alan','Denge Konseyi','Tapınak Kompleksi'],en:['Sacred Ground','Council of Balance','Temple Complex']},chars:[{name:'Ertler Serbam',role:{tr:'Yüksek Rahip',en:'High Priest'},id:null}],loreId:'denge-konseyi'},
+
+  shelia:{color:'#7A5828',name:{tr:'Shelia / Selya',en:'Shelia / Selya'},eye:{tr:'Güney Adası',en:'Southern Island'},capital:{tr:'★ Selya Limanı ⚓',en:'★ Selya Harbor ⚓'},house:{tr:'Selya Hanesi (Celios Selya)',en:'House Selya (Celios Selya)'},desc:{tr:"Zeandor'un 9 yaşından itibaren büyüdüğü ada. Bilge eski Başvezir Celios Selya liderliğinde yarı özerk yapısını korur. Liman vinci icadı, Kör Yengeç Tavernası ve Zeandor'un olgunluk yılları bu adaya aittir.",en:"The island where Zeandor grew up from age 9. Under wise former Grand Vizier Celios Selya it maintains semi-autonomous status. The port crane, the Blind Crab Tavern, and Zeandor's formative years all belong here."},tags:{tr:["Zeandor'un Yurdu","Celios'un Yönetimi",'Deniz Gücü'],en:["Zeandor's Home","Celios's Rule",'Naval Power']},chars:[{name:'Celios Selya',role:{tr:'Selya Lordu',en:'Lord of Selya'},id:'celios'},{name:'Liaher Selya',role:{tr:'Sessiz Fırtına',en:'The Quiet Storm'},id:'liaher'},{name:'Elyndra Selya',role:{tr:'İlahi Yıldız',en:'Divine Star'},id:'elyndra'}],loreId:'selya'},
+
+  pilkkard:{color:'#5A7A95',name:{tr:'Pilkkard',en:'Pilkkard'},eye:{tr:'Güneydoğu Eyaleti',en:'Southeastern Province'},capital:{tr:'★ Pilkkard Kalesi',en:'★ Pilkkard Fortress'},house:{tr:'Fendrel Hanesi (önde gelen)',en:'House Fendrel (prominent)'},desc:{tr:"Scifella'nın KS 1258'de fethettiği güney eyaleti. Lunrye döneminde başarısız bir kuşatmaya direnen Pilkkard, imparatorluk tarihindeki en büyük askerî yenilginin sembolü olarak kalır.",en:"The southern province conquered by Scifella in KS 1258. Pilkkard resisted a failed siege in Lunrye's reign, remaining the symbol of the greatest military defeat in imperial history."},tags:{tr:["Scifella'nın Fethi","Lunrye'nin Yenilgisi",'Kale Şehri'],en:["Scifella's Conquest","Lunrye's Defeat",'Fortress City']},chars:[],loreId:null}
+};
+
+/* ── PAN / ZOOM ── */
+let sc=1,tx=0,ty=0,drag=false,dx=0,dy=0,stx=0,sty=0,pinch=false,pinchD=0;
+const outer=document.getElementById('outer'),inner=document.getElementById('inner');
+function applyT(){inner.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;}
+function clamp(v,a,b){return Math.min(b,Math.max(a,v));}
+function doZoom(f,cx,cy){const n=clamp(sc*f,0.08,12);tx=cx-(cx-tx)*(n/sc);ty=cy-(cy-ty)*(n/sc);sc=n;applyT();}
+function zoomBtn(f){doZoom(f,outer.clientWidth/2,outer.clientHeight/2);}
+function resetView(){const img=document.getElementById('map-img');if(!img.naturalWidth)return;const asp=img.naturalWidth/img.naturalHeight;const ow=outer.clientWidth,oh=outer.clientHeight;let w=ow,h=ow/asp;if(h>oh){h=oh;w=oh*asp;}sc=w/img.naturalWidth;tx=(ow-img.naturalWidth*sc)/2;ty=(oh-img.naturalHeight*sc)/2;applyT();}
+outer.addEventListener('mousedown',e=>{if(e.button!==0||e.target.closest('#ipanel'))return;drag=true;dx=e.clientX;dy=e.clientY;stx=tx;sty=ty;outer.classList.add('dragging');e.preventDefault();});
+window.addEventListener('mousemove',e=>{if(!drag)return;tx=stx+(e.clientX-dx);ty=sty+(e.clientY-dy);applyT();});
+window.addEventListener('mouseup',()=>{drag=false;outer.classList.remove('dragging');});
+outer.addEventListener('wheel',e=>{e.preventDefault();const r=outer.getBoundingClientRect();doZoom(e.deltaY>0?0.88:1.135,e.clientX-r.left,e.clientY-r.top);},{passive:false});
+outer.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;dx=e.touches[0].clientX;dy=e.touches[0].clientY;stx=tx;sty=ty;}else if(e.touches.length===2){drag=false;pinch=true;pinchD=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}e.preventDefault();},{passive:false});
+outer.addEventListener('touchmove',e=>{if(drag&&e.touches.length===1){tx=stx+(e.touches[0].clientX-dx);ty=sty+(e.touches[0].clientY-dy);applyT();}else if(pinch&&e.touches.length===2){const nd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);const cx=(e.touches[0].clientX+e.touches[1].clientX)/2,cy=(e.touches[0].clientY+e.touches[1].clientY)/2;const r=outer.getBoundingClientRect();doZoom(nd/pinchD,cx-r.left,cy-r.top);pinchD=nd;}e.preventDefault();},{passive:false});
+outer.addEventListener('touchend',()=>{drag=false;pinch=false;});
+
+/* ── GÖRSEL ── */
+function onImgLoad(){document.getElementById('loading').style.display='none';const img=document.getElementById('map-img');img.style.width=img.naturalWidth+'px';img.style.height=img.naturalHeight+'px';resetView();setTimeout(()=>document.getElementById('hint').classList.add('gone'),4500);}
+function onImgError(){document.getElementById('loading').innerHTML='<div style="max-width:320px;text-align:center"><p style="color:var(--bloodb);font-style:italic;margin-bottom:.75rem">Harita görseli yüklenemedi.</p><p style="font-size:.8rem;color:var(--border);line-height:1.6"><strong style="color:var(--goldd)">assets/images/SIYASI_HARITA.png</strong> dosyasını projeye ekleyin.</p></div>';}
+
+/* ── TOOLTIP ── */
+const tip=document.getElementById('tip');
+document.querySelectorAll('.rgn').forEach(el=>{
+  el.addEventListener('mouseenter',e=>{const r=REGIONS[el.dataset.r];if(!r)return;tip.textContent=Lang.t(r.name);tip.style.display='block';moveTip(e);});
+  el.addEventListener('mousemove',e=>moveTip(e));
+  el.addEventListener('mouseleave',()=>{tip.style.display='none';});
+});
+function moveTip(e){tip.style.left=(e.clientX+16)+'px';tip.style.top=(e.clientY-30)+'px';}
+
+/* ── BİLGİ PANELİ ── */
+let activeR=null;
+document.querySelectorAll('.rgn').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();showInfo(el.dataset.r);}));
+outer.addEventListener('click',e=>{if(!e.target.closest('.rgn')&&!e.target.closest('#ipanel'))closeInfo();});
+
+function showInfo(id){
+  const d=REGIONS[id];if(!d)return;
+  const l=Lang.get();
+  activeR=id;
+  document.querySelectorAll('.rgn').forEach(el=>el.classList.toggle('active',el.dataset.r===id));
+  document.getElementById('ip-eye').textContent=Lang.t(d.eye);
+  document.getElementById('ip-color-bar').style.background=`linear-gradient(to right,${d.color},transparent)`;
+  document.getElementById('ip-name').textContent=Lang.t(d.name);
+  document.getElementById('ip-capital').textContent=Lang.t(d.capital);
+
+  const charsHTML=d.chars.length
+    ? d.chars.map(c=>c.id
+        ?`<a class="ip-char-link" href="karakterler.html#${c.id}">${esc(c.name)}<span class="ip-char-role">— ${esc(Lang.t(c.role))}</span></a>`
+        :`<div class="ip-char-plain">${esc(c.name)}<span class="ip-char-role">— ${esc(Lang.t(c.role))}</span></div>`
+      ).join(''):'';
+
+  const loreLink=d.loreId
+    ?`<a class="ip-lore-link" href="lore.html#${d.loreId}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>${l==='tr'?'Evren ansiklopedisinde aç':'Open in encyclopedia'}</a>`:''
+
+  document.getElementById('ip-body').innerHTML=`
+    <p class="ip-sl">${l==='tr'?'YÖNETİCİ HANE':'RULING HOUSE'}</p>
+    <span class="ip-house">${esc(Lang.t(d.house))}</span>
+    <p class="ip-sl">${l==='tr'?'TANIM':'DESCRIPTION'}</p>
+    <p class="ip-desc">${esc(Lang.t(d.desc))}</p>
+    ${d.tags?`<p class="ip-sl">${l==='tr'?'ÖZELLİKLER':'FEATURES'}</p><div class="ip-tags">${Lang.t(d.tags).map(t=>`<span class="iptag">${esc(t)}</span>`).join('')}</div>`:''}
+    ${charsHTML?`<p class="ip-sl">${l==='tr'?'İLGİLİ KARAKTERLER':'RELATED CHARACTERS'}</p><div class="ip-chars">${charsHTML}</div>`:''}
+    ${loreLink}`;
+
+  document.getElementById('ipanel').classList.add('open');
+}
+function closeInfo(){activeR=null;document.getElementById('ipanel').classList.remove('open');document.querySelectorAll('.rgn').forEach(el=>el.classList.remove('active'));}
+document.getElementById('ip-close').addEventListener('click',closeInfo);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo();});
+
+/* ── LEJANT ── */
+function buildLegend(){
+  document.getElementById('leg-title').textContent=Lang.get()==='tr'?'Eyaletler':'Provinces';
+  document.getElementById('leg-items').innerHTML=Object.entries(REGIONS).map(([id,r])=>
+    `<div class="leg-item" onclick="showInfo('${id}')">
+      <div class="leg-dot" style="background:${r.color}"></div>
+      <span class="leg-name">${esc(Lang.t(r.name))}</span>
+    </div>`).join('');
+}
+
+/* ── HASH ── */
+function checkHash(){const h=location.hash.slice(1);if(h&&REGIONS[h])setTimeout(()=>showInfo(h),700);}
+
+/* ── DİL ── */
+function applyLang(l){
+  document.documentElement.lang=l;
+  document.getElementById('hint').textContent=l==='tr'?'Sürükle · Kaydır/Sıkıştır: zoom · Bölgeye tıkla: bilgi':'Drag · Scroll/Pinch: zoom · Click region: info';
+  document.title=(l==='tr'?'Harita':'Map')+' · Stallhart Wiki';
+  buildLegend();
+  if(activeR)showInfo(activeR);
+}
+
+injectNav('harita.html');
+initWiki({onLangChange:applyLang});
+buildLegend();
+checkHash();
+</script>
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stallhart Destanı — Bölüm Listesi">
+<title>Bölümler · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+#bolumler-sec { background: var(--bg); }
+
+/* Arc başlıkları */
+.arc-header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1.25rem 2rem; background: var(--deep);
+  border: 1px solid var(--border); border-bottom: none;
+  margin-top: 2rem;
+}
+.arc-header:first-of-type { margin-top: 0; }
+.arc-num {
+  font-family: 'IM Fell English', serif; font-style: italic;
+  font-size: .72rem; color: var(--goldd); letter-spacing: .12em;
+  flex-shrink: 0;
+}
+.arc-name {
+  font-family: 'IM Fell English', serif;
+  font-size: 1rem; color: var(--parchl);
+}
+.arc-count {
+  margin-left: auto; font-family: 'IM Fell English', serif;
+  font-style: italic; font-size: .72rem; color: var(--parchd);
+}
+
+/* Bölüm satırı (genişletilmiş) */
+.ci {
+  position: relative;
+  cursor: pointer;
+}
+.ci-status {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.ci-status.read { background: var(--goldd); }
+.ci-status.unread { background: transparent; }
+
+.ci-check {
+  margin-left: auto; display: flex; align-items: center;
+  gap: .4rem; flex-shrink: 0; padding-top: .3rem;
+}
+.read-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--parchd); font-size: .7rem; padding: 3px 8px;
+  cursor: pointer; transition: .15s;
+  font-family: 'IM Fell English', serif; font-style: italic;
+  white-space: nowrap;
+}
+.read-btn:hover { border-color: var(--goldd); color: var(--gold); }
+.read-btn.read-done {
+  border-color: var(--goldd); color: var(--goldd);
+  background: rgba(196,150,42,.07);
+}
+
+/* İlk satır metni */
+.ci-first-line {
+  font-size: .78rem; color: rgba(154,136,112,.55);
+  font-style: italic; margin-top: .5rem;
+  border-left: 1px solid var(--border); padding-left: .75rem;
+}
+
+/* İlerleme çubuğu */
+.progress-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1rem 1.5rem; margin-bottom: 2rem;
+  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+}
+.progress-bar-outer {
+  flex: 1; min-width: 120px; height: 4px;
+  background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%; background: var(--gold);
+  border-radius: 2px; transition: width .4s ease;
+}
+.progress-text {
+  font-family: 'IM Fell English', serif; font-style: italic;
+  font-size: .82rem; color: var(--parchd); white-space: nowrap;
+}
+.progress-pct {
+  font-size: 1.1rem; color: var(--gold);
+  font-family: 'IM Fell English', serif;
+}
+.reset-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--parchd); font-size: .72rem; padding: 3px 8px;
+  cursor: pointer; transition: .15s;
+  font-family: 'IM Fell English', serif; font-style: italic;
+}
+.reset-btn:hover { border-color: var(--bloodb); color: var(--bloodb); }
+
+/* Arc filtresi */
+.arc-filters { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+/* Kilitli */
+.ci.dim .ci-n  { color: var(--borderl); }
+.ci.dim .ci-v  { color: var(--border); }
+.ci.dim .ci-first-line { display: none; }
+.locked-badge {
+  font-size: .68rem; font-family: 'IM Fell English', serif;
+  font-style: italic; color: var(--goldd); margin-left: .5rem;
+}
+</style>
+</head>
+<body>
+
+<section id="bolumler-sec">
+  <div class="page-hero">
+    <p class="page-hero-eye">Stallhart Destanı · Cilt I</p>
+    <h1 class="page-hero-title" id="page-title">Bölümler</h1>
+    <p class="page-hero-sub" id="page-sub">Devam eden roman — okunan bölümleri takip et.</p>
+  </div>
+
+  <div class="inn" style="padding: 2.5rem 2rem 6rem;">
+
+    <!-- İlerleme çubuğu -->
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-pct" id="progress-pct">0%</div>
+      <div class="progress-bar-outer">
+        <div class="progress-bar-inner" id="progress-bar" style="width:0%"></div>
+      </div>
+      <span class="progress-text" id="progress-text">0 / 0 bölüm okundu</span>
+      <button class="reset-btn" id="reset-btn">Sıfırla</button>
+    </div>
+
+    <!-- Arc filtresi -->
+    <div class="arc-filters" id="arc-filters">
+      <button class="f-btn on" data-arc="all" id="farcall">Tüm Yaylar</button>
+    </div>
+
+    <!-- Bölüm listesi -->
+    <div id="chapters-list">
+      <div style="color:var(--parchd);font-style:italic;font-size:.88rem;padding:1rem 0;">Yükleniyor…</div>
+    </div>
+
+  </div>
+</section>
+
+<script src="assets/js/wiki.js"></script>
+<script>
+const { Lang, loadData, initWiki, injectNav, ReadTracker, esc } = Wiki;
+
+injectNav('bolumler.html');
+
+let chapData   = null;
+let activeArc  = 'all';
+
+/* ── VERİ ────────────────────────────────────────── */
+async function init() {
+  chapData = await loadData('chapters.json');
+  buildArcFilters();
+  renderChapters();
+  renderProgress();
+  applyLang(Lang.get());
+}
+
+/* ── ARC FİLTRELERİ ──────────────────────────────── */
+function buildArcFilters() {
+  const l   = Lang.get();
+  const bar = document.getElementById('arc-filters');
+  chapData.arcs.forEach(arc => {
+    const btn = document.createElement('button');
+    btn.className = 'f-btn';
+    btn.dataset.arc = arc.id;
+    btn.textContent = Lang.t(arc.name);
+    btn.id = 'farc' + arc.id;
+    bar.appendChild(btn);
+  });
+  bar.addEventListener('click', e => {
+    const btn = e.target.closest('[data-arc]');
+    if (!btn) return;
+    document.querySelectorAll('[data-arc]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    activeArc = btn.dataset.arc === 'all' ? 'all' : parseInt(btn.dataset.arc);
+    renderChapters();
+  });
+}
+
+/* ── BÖLÜMLER ─────────────────────────────────────── */
+function renderChapters() {
+  if (!chapData) return;
+  const l = Lang.get();
+  const t = obj => Lang.t(obj);
+
+  const filtered = chapData.chapters.filter(ch =>
+    activeArc === 'all' || ch.arc === activeArc
+  );
+
+  /* Yaylara göre grupla */
+  const byArc = {};
+  filtered.forEach(ch => {
+    if (!byArc[ch.arc]) byArc[ch.arc] = [];
+    byArc[ch.arc].push(ch);
+  });
+
+  let html = '';
+  Object.entries(byArc).forEach(([arcId, chapters]) => {
+    const arc = chapData.arcs.find(a => a.id === parseInt(arcId));
+    const freeCount = chapters.filter(c => c.free).length;
+    html += `
+      <div class="arc-header">
+        <span class="arc-num">${l === 'tr' ? 'YAY' : 'ARC'} ${arcId}</span>
+        <span class="arc-name">${esc(t(arc?.name || {tr:'—',en:'—'}))}</span>
+        <span class="arc-count">${freeCount} / ${chapters.length} ${l === 'tr' ? 'bölüm' : 'chapters'}</span>
+      </div>
+      <div class="cl">
+        ${chapters.map(ch => renderChapter(ch, l, t)).join('')}
+      </div>`;
+  });
+
+  document.getElementById('chapters-list').innerHTML = html;
+
+  /* Oku/okunmadı butonları */
+  document.querySelectorAll('.read-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.rid;
+      if (ReadTracker.has(id)) {
+        ReadTracker.unmark(id);
+        btn.textContent = l === 'tr' ? 'Okunmadı' : 'Unread';
+        btn.classList.remove('read-done');
+        btn.closest('.ci')?.querySelector('.ci-status')?.classList.replace('read','unread');
+      } else {
+        ReadTracker.mark(id);
+        btn.textContent = l === 'tr' ? '✓ Okundu' : '✓ Read';
+        btn.classList.add('read-done');
+        btn.closest('.ci')?.querySelector('.ci-status')?.classList.replace('unread','read');
+      }
+      renderProgress();
+    });
+  });
+}
+
+function renderChapter(ch, l, t) {
+  const isRead = ReadTracker.has('ch-' + ch.id);
+  const isLocked = !ch.free;
+
+  return `
+    <div class="ci${isLocked ? ' dim' : ''}" id="bolum-${ch.id}" style="padding-left:2.5rem;">
+      <div class="ci-status ${isRead ? 'read' : 'unread'}"></div>
+      <div class="ci-v">
+        ${esc(ch.ks)} ${ch.arc ? `· ${l === 'tr' ? 'Yay' : 'Arc'} ${ch.arc}` : ''}
+      </div>
+      <div>
+        <div class="ci-n">
+          ${esc(ch.num)}. ${esc(t(ch.title))}
+          ${isLocked ? `<span class="locked-badge">${l === 'tr' ? '(kilitli)' : '(locked)'}</span>` : ''}
+        </div>
+        ${!isLocked ? `
+          <div class="ci-d">${esc(t(ch.synopsis))}</div>
+          ${ch.firstLine ? `<div class="ci-first-line">"${esc(ch.firstLine)}"</div>` : ''}
+        ` : `<div class="ci-d" style="color:var(--border);font-style:italic">
+          ${l === 'tr' ? 'Bu bölüm henüz yayınlanmadı.' : 'This chapter has not been published yet.'}</div>`}
+      </div>
+      <div class="ci-check">
+        <div class="ci-p" style="margin-right:.5rem">${esc(t(ch.pov))}</div>
+        ${!isLocked ? `
+          <button class="read-btn ${isRead ? 'read-done' : ''}" data-rid="ch-${ch.id}">
+            ${isRead
+              ? (l === 'tr' ? '✓ Okundu' : '✓ Read')
+              : (l === 'tr' ? 'Okunmadı' : 'Unread')}
+          </button>
+          <button class="rbtn" style="font-size:.68rem;padding:.2rem .55rem" onclick="openRead(${ch.id})" title="${l==='tr'?'Okuma Modu':'Reading Mode'}">📖</button>` : ''}
+      </div>
+    </div>`;
+}
+
+/* ── İLERLEME ─────────────────────────────────────── */
+function renderProgress() {
+  if (!chapData) return;
+  const l = Lang.get();
+  const free = chapData.chapters.filter(c => c.free);
+  const read = free.filter(c => ReadTracker.has('ch-' + c.id));
+  const pct  = free.length ? Math.round((read.length / free.length) * 100) : 0;
+
+  document.getElementById('progress-pct').textContent  = pct + '%';
+  document.getElementById('progress-bar').style.width  = pct + '%';
+  document.getElementById('progress-text').textContent =
+    `${read.length} / ${free.length} ${l === 'tr' ? 'bölüm okundu' : 'chapters read'}`;
+}
+
+/* ── SIFIRLA ──────────────────────────────────────── */
+document.getElementById('reset-btn').addEventListener('click', () => {
+  const l = Lang.get();
+  const msg = l === 'tr'
+    ? 'Tüm okuma ilerlemesi silinecek. Emin misin?'
+    : 'All reading progress will be deleted. Are you sure?';
+  if (!confirm(msg)) return;
+  localStorage.removeItem('sw-read');
+  renderChapters();
+  renderProgress();
+});
+
+/* ── DİL ─────────────────────────────────────────── */
+function applyLang(l) {
+  document.documentElement.lang = l;
+  document.getElementById('page-title').textContent =
+    l === 'tr' ? 'Bölümler' : 'Chapters';
+  document.getElementById('page-sub').textContent =
+    l === 'tr' ? 'Devam eden roman — okunan bölümleri takip et.'
+               : 'Ongoing novel — track your reading progress.';
+  document.getElementById('farcall').textContent =
+    l === 'tr' ? 'Tüm Yaylar' : 'All Arcs';
+  document.getElementById('reset-btn').textContent =
+    l === 'tr' ? 'Sıfırla' : 'Reset';
+
+  if (chapData) {
+    renderChapters();
+    renderProgress();
+  }
+}
+
+injectNav('bolumler.html');
+initWiki({ onLangChange: applyLang });
+init();
+</script>
+</body>
+</html>
+<!-- ── OKUMA MODU STYLE + OVERLAY ── -->
+<style>
+.read-overlay{position:fixed;inset:0;z-index:500;background:var(--bg);overflow-y:auto;display:none;flex-direction:column}
+.read-overlay.open{display:flex}
+.read-bar{display:flex;align-items:center;gap:1rem;padding:.75rem 2rem;border-bottom:1px solid var(--border);background:rgba(6,4,2,.95);position:sticky;top:0;z-index:2;backdrop-filter:blur(6px);flex-shrink:0}
+.read-title{font-family:'IM Fell English',serif;font-size:.92rem;color:var(--parchl);flex:1}
+.read-ctrl{display:flex;gap:.5rem;align-items:center}
+.rbtn{background:none;border:1px solid var(--border);color:var(--parchd);font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;padding:.28rem .7rem;cursor:pointer;transition:.18s}
+.rbtn:hover{border-color:var(--goldd);color:var(--gold)}
+.rbtn.active{border-color:var(--gold);color:var(--gold)}
+.font-slider{accent-color:var(--gold);width:80px;cursor:pointer}
+.read-body{flex:1;max-width:680px;margin:0 auto;padding:4rem 2rem 6rem;width:100%}
+.read-eyebrow{font-family:'IM Fell English',serif;font-style:italic;font-size:.72rem;color:var(--goldd);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.75rem}
+.read-ch-title{font-family:'IM Fell English',serif;font-size:2.2rem;color:var(--parchl);margin-bottom:.5rem;line-height:1.15}
+.read-ch-sub{font-size:.88rem;color:var(--goldd);font-style:italic;margin-bottom:.5rem}
+.read-ks{font-size:.78rem;color:var(--parchd);font-style:italic;margin-bottom:2.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.read-first-line{font-family:'IM Fell English',serif;font-size:1.05rem;color:var(--parch);line-height:1.95;font-style:italic;margin-bottom:1rem;padding-left:1.25rem;border-left:2px solid var(--goldd)}
+.read-synopsis{font-size:1rem;color:var(--parchd);line-height:1.95;margin-bottom:2rem}
+.read-nav{display:flex;justify-content:space-between;padding-top:2rem;border-top:1px solid var(--border)}
+.read-nav-btn{font-family:'IM Fell English',serif;font-style:italic;font-size:.82rem;color:var(--goldd);text-decoration:none;transition:color .15s}
+.read-nav-btn:hover{color:var(--gold)}
+.read-progress-bar{height:2px;background:linear-gradient(to right,var(--gold),var(--goldd));position:sticky;bottom:0;transform-origin:left;transition:transform .1s}
+/* Tema */
+.read-overlay.sepia{background:#1a1207;--parch:#D4C4A0;--parchd:#B8A882}
+.read-overlay.light{background:#F8F4E8;--parch:#2A1A08;--parchd:#5A4020;--parchl:#1A0E04;--border:#C8B890;--goldd:#7A5820;--gold:#9A6E28}
+.read-overlay.light .read-bar{background:rgba(248,244,232,.97);border-color:#C8B890}
+</style>
+
+<!-- Okuma Modu Overlay -->
+<div class="read-overlay" id="read-overlay">
+  <div class="read-bar">
+    <span class="read-title" id="read-bar-title">—</span>
+    <div class="read-ctrl">
+      <!-- Font boyutu -->
+      <input type="range" class="font-slider" id="font-slider" min="14" max="22" value="17" title="Font boyutu">
+      <!-- Tema -->
+      <button class="rbtn" id="theme-dark"  onclick="setTheme('')"      title="Koyu">🌑</button>
+      <button class="rbtn" id="theme-sepia" onclick="setTheme('sepia')" title="Sepya">📜</button>
+      <button class="rbtn" id="theme-light" onclick="setTheme('light')" title="Açık">☀</button>
+      <!-- Kapat -->
+      <button class="rbtn" onclick="closeRead()" title="Kapat">✕ Kapat</button>
+    </div>
+  </div>
+  <div class="read-body" id="read-body"></div>
+  <div class="read-progress-bar" id="read-progress"></div>
+</div>
+
+<script>
+/* ── OKUMA MODU ── */
+let readChapters=[], readIdx=0;
+
+function openRead(chapId){
+  if(!chapData)return;
+  const free=chapData.chapters.filter(c=>c.free);
+  const i=free.findIndex(c=>c.id===chapId);
+  if(i<0)return;
+  readChapters=free; readIdx=i;
+  renderRead();
+  document.getElementById('read-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('read-overlay').scrollTop=0;
+
+  // okuma takibi
+  ReadTracker.mark('ch-'+chapId);
+  // buton güncelle
+  const btn=document.querySelector(`.read-btn[data-rid="ch-${chapId}"]`);
+  if(btn){btn.textContent=Wiki.Lang.get()==='tr'?'✓ Okundu':'✓ Read';btn.classList.add('read-done');}
+  renderProgress();
+}
+window.openRead=openRead;
+
+function closeRead(){
+  document.getElementById('read-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function renderRead(){
+  const l=Wiki.Lang.get(), t=o=>Wiki.Lang.t(o);
+  const ch=readChapters[readIdx];
+  if(!ch)return;
+  const arc=chapData.arcs.find(a=>a.id===ch.arc);
+
+  document.getElementById('read-bar-title').textContent=`${ch.num}. ${t(ch.title)}`;
+  document.title=`${ch.num}. ${t(ch.title)} · Stallhart Wiki`;
+
+  document.getElementById('read-body').innerHTML=`
+    <div class="read-eyebrow">${t(arc?.name||{tr:'Stallhart Destanı',en:'Stallhart Saga'})} · ${l==='tr'?'Yay':'Arc'} ${ch.arc}</div>
+    <h1 class="read-ch-title">${ch.num}. ${Wiki.esc(t(ch.title))}</h1>
+    <div class="read-ch-sub">POV: ${Wiki.esc(t(ch.pov))}</div>
+    <div class="read-ks">⏳ ${ch.ks}</div>
+    ${ch.firstLine?`<p class="read-first-line">"${Wiki.esc(ch.firstLine)}"</p>`:''}
+    <p class="read-synopsis">${Wiki.esc(t(ch.synopsis))}</p>
+    <div class="read-nav">
+      ${readIdx>0?`<a class="read-nav-btn" onclick="prevChap()">← ${l==='tr'?'Önceki Bölüm':'Previous Chapter'}</a>`:'<span></span>'}
+      ${readIdx<readChapters.length-1?`<a class="read-nav-btn" onclick="nextChap()">${l==='tr'?'Sonraki Bölüm':'Next Chapter'} →</a>`:'<span></span>'}
+    </div>`;
+  document.getElementById('read-overlay').scrollTop=0;
+}
+
+function prevChap(){if(readIdx>0){readIdx--;renderRead();}}
+function nextChap(){if(readIdx<readChapters.length-1){readIdx++;renderRead();
+  ReadTracker.mark('ch-'+readChapters[readIdx].id);renderProgress();}}
+window.prevChap=prevChap; window.nextChap=nextChap;
+
+/* Font boyutu */
+document.getElementById('font-slider').addEventListener('input',function(){
+  document.getElementById('read-body').style.fontSize=this.value+'px';
+  localStorage.setItem('sw-read-font',this.value);
+});
+(function(){const f=localStorage.getItem('sw-read-font');if(f){document.getElementById('font-slider').value=f;document.getElementById('read-body').style.fontSize=f+'px';}})();
+
+/* Tema */
+function setTheme(t){
+  const ov=document.getElementById('read-overlay');
+  ov.className='read-overlay open'+(t?' '+t:'');
+  localStorage.setItem('sw-read-theme',t);
+}
+(function(){const t=localStorage.getItem('sw-read-theme');if(t)setTheme(t);})();
+
+/* Scroll progress */
+document.getElementById('read-overlay').addEventListener('scroll',function(){
+  const max=this.scrollHeight-this.clientHeight;
+  const pct=max?this.scrollTop/max:0;
+  document.getElementById('read-progress').style.transform=`scaleX(${pct})`;
+},{passive:true});
+
+/* Klavye */
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('read-overlay').classList.contains('open'))return;
+  if(e.key==='Escape')closeRead();
+  if(e.key==='ArrowRight')nextChap();
+  if(e.key==='ArrowLeft')prevChap();
+});
+</script>

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="tr" id="r">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soy Ağacı — Son İmparator</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060402;--deep:#0d0804;--border:#3D2A14;--borderl:#5C3F1E;
+  --gold:#C4962A;--goldb:#E8B84B;--goldd:#7A5C18;
+  --parch:#D4C0A0;--parchl:#F0E6C8;--parchd:#9A8870;--bloodb:#8B2A2A;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--parch);font-family:'Libre Baskerville',Georgia,serif;font-size:16px;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--deep)}::-webkit-scrollbar-thumb{background:var(--border)}
+
+/* NAV */
+nav{flex-shrink:0;background:rgba(4,2,1,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);z-index:200}
+.nav-in{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;height:54px;gap:1rem}
+.nav-brand{font-family:'IM Fell English',serif;font-size:1rem;color:var(--gold);text-decoration:none;flex-shrink:0}
+.nav-links{display:flex;gap:1.1rem;list-style:none;flex:1;justify-content:center}
+.nav-links a{font-family:'IM Fell English',serif;font-size:.8rem;color:var(--parchd);text-decoration:none;transition:color .18s;white-space:nowrap}
+.nav-links a:hover,.nav-links a.cur{color:var(--gold)}
+.nav-r{display:flex;align-items:center;flex-shrink:0}
+.lang-btn{font-family:'IM Fell English',serif;font-size:.8rem;color:var(--parchd);background:none;border:1px solid var(--border);padding:.28rem .65rem;cursor:pointer;transition:.18s}
+.lang-btn:hover{border-color:var(--goldd);color:var(--gold)}
+.nav-ham{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:4px;flex-shrink:0}
+.nav-ham span{display:block;width:22px;height:1.5px;background:var(--parchd)}
+@media(max-width:780px){.nav-links{display:none;flex-direction:column;position:absolute;top:54px;left:0;right:0;background:rgba(4,2,1,.97);border-bottom:1px solid var(--border);padding:1rem 2rem;gap:.9rem;z-index:199}.nav-links.open{display:flex}.nav-ham{display:flex}}
+
+/* TREE TABS */
+.tree-tabs{flex-shrink:0;display:flex;background:rgba(6,4,2,.98);border-bottom:1px solid var(--border)}
+.ttab{font-family:'IM Fell English',serif;font-size:.88rem;font-style:italic;color:var(--parchd);background:none;border:none;padding:.85rem 2rem;cursor:pointer;position:relative;transition:color .18s;white-space:nowrap}
+.ttab::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transition:transform .2s}
+.ttab.on{color:var(--gold)}.ttab.on::after{transform:scaleX(1)}
+.ttab:hover{color:var(--parchl)}
+
+/* MAIN LAYOUT */
+.tree-layout{flex:1;display:flex;overflow:hidden;position:relative}
+
+/* TREE CONTAINER */
+.tree-container{flex:1;overflow:auto;cursor:grab;position:relative;display:none}
+.tree-container.on{display:block}
+.tree-container.dragging{cursor:grabbing}
+.tree-svg-wrap{padding:3rem;display:inline-block;min-width:100%}
+.tree-svg-wrap svg{display:block}
+
+/* SVG NODE STYLES */
+.fn{cursor:pointer}
+.fn rect{transition:filter .2s,stroke-width .18s}
+.fn:hover rect,.fn.active rect{filter:brightness(1.5)}
+.fn.active rect{stroke-width:2.5!important}
+
+/* Imperial nodes */
+.fn-hist rect{fill:rgba(12,8,4,.85);stroke:rgba(61,42,20,.7);stroke-width:1.5}
+.fn-dec  rect{fill:rgba(36,18,18,.85);stroke:rgba(100,48,48,.75);stroke-width:1.5}
+.fn-alive rect{fill:rgba(20,14,6,.85);stroke:rgba(122,92,24,.75);stroke-width:1.5}
+.fn-star rect{fill:rgba(30,20,4,.9);stroke:#C4962A;stroke-width:2}
+.fn-spouse rect{fill:rgba(14,10,6,.7);stroke:rgba(61,42,20,.5);stroke-width:1;stroke-dasharray:5 3}
+.fn-related rect{fill:rgba(14,10,6,.65);stroke:rgba(58,42,20,.45);stroke-width:1;stroke-dasharray:4 4}
+
+/* Selya nodes */
+.fn-selya rect{fill:rgba(18,10,28,.85);stroke:rgba(122,58,154,.6);stroke-width:1.5}
+.fn-selya-main rect{fill:rgba(28,15,40,.9);stroke:rgba(175,110,210,.8);stroke-width:2}
+
+/* Node text */
+.node-name{font-family:'IM Fell English',serif;font-size:12.5px;fill:#F0E6C8;text-anchor:middle}
+.node-sub {font-family:'IM Fell English',serif;font-style:italic;font-size:10px;fill:#9A8870;text-anchor:middle}
+.node-ks  {font-family:'IM Fell English',serif;font-size:9px;fill:#7A5C18;text-anchor:middle}
+.fn-star .node-name{fill:#E8B84B}
+.fn-star .node-sub{fill:#C4962A}
+.fn-selya-main .node-name{fill:#C09AE0}
+.fn-selya .node-name{fill:#D4C0F0}
+
+/* Lines */
+.fl{stroke:#3D2A14;stroke-width:1.5;fill:none}
+.fl-dash{stroke:#3D2A14;stroke-width:1;fill:none;stroke-dasharray:5 4;opacity:.65}
+.fl-selya{stroke:#5C3A7A;stroke-width:1.5;fill:none;opacity:.7}
+.fl-selya-dash{stroke:#5C3A7A;stroke-width:1;fill:none;stroke-dasharray:5 4;opacity:.45}
+.fl-special{stroke:#C4962A;stroke-width:1;fill:none;stroke-dasharray:3 4;opacity:.4}
+.msym{fill:var(--bg);stroke:#7A5C18;stroke-width:1.5}
+.msym-selya{fill:var(--bg);stroke:#7A3A9A;stroke-width:1.5}
+.anno{font-family:'IM Fell English',serif;font-style:italic;font-size:9.5px;fill:#5C3F1E}
+.anno-selya{font-family:'IM Fell English',serif;font-style:italic;font-size:9.5px;fill:#6A3A8A}
+
+/* INFO PANEL */
+.ipanel{position:absolute;top:0;right:0;bottom:0;width:290px;background:rgba(8,5,2,.97);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .28s ease;z-index:100;overflow-y:auto;backdrop-filter:blur(8px)}
+.ipanel.open{transform:translateX(0)}
+.ip-close{position:absolute;top:.9rem;right:1rem;background:none;border:none;color:var(--parchd);cursor:pointer;font-family:'IM Fell English',serif;font-size:1.3rem;z-index:10;transition:color .18s;line-height:1}
+.ip-close:hover{color:var(--gold)}
+.ip-body{padding:2rem 1.5rem}
+.ip-eye{font-family:'IM Fell English',serif;font-size:.63rem;letter-spacing:.15em;color:var(--goldd);margin-bottom:.4rem;font-style:italic}
+.ip-name{font-family:'IM Fell English',serif;font-size:1.45rem;color:var(--parchl);line-height:1.15;margin-bottom:.2rem}
+.ip-title{font-size:.82rem;font-style:italic;color:var(--gold);margin-bottom:.85rem}
+.ip-rule{width:55px;height:1px;background:linear-gradient(to right,var(--goldd),transparent);margin-bottom:.9rem}
+.ip-sl{font-family:'IM Fell English',serif;font-size:.63rem;letter-spacing:.12em;color:var(--goldd);margin-bottom:.35rem;margin-top:.85rem}
+.ip-val{font-size:.82rem;color:var(--parchd);line-height:1.75;font-style:italic}
+.ip-ks{display:inline-block;font-family:'IM Fell English',serif;font-size:.68rem;border:1px solid var(--border);padding:.15rem .55rem;color:var(--goldd);font-style:italic;margin-bottom:.85rem}
+.ip-epi{font-family:'IM Fell English',serif;font-style:italic;font-size:.75rem;color:var(--bloodb);padding-top:.75rem;border-top:1px solid var(--border);margin-top:.75rem}
+
+/* LEGEND */
+.legend{position:absolute;bottom:1rem;left:1rem;background:rgba(8,5,2,.88);border:1px solid var(--border);padding:.65rem .9rem;backdrop-filter:blur(4px);pointer-events:none}
+.leg-row{display:flex;align-items:center;gap:.5rem;font-family:'IM Fell English',serif;font-size:.68rem;color:var(--parchd);font-style:italic;margin-bottom:.3rem}
+.leg-row:last-child{margin-bottom:0}
+.leg-box{width:14px;height:10px;flex-shrink:0}
+.leg-line{width:22px;height:0;flex-shrink:0}
+
+/* HINT */
+.hint-text{position:absolute;top:1rem;left:50%;transform:translateX(-50%);font-family:'IM Fell English',serif;font-style:italic;font-size:.7rem;color:var(--parchd);background:rgba(6,4,2,.78);border:1px solid var(--border);padding:.28rem .75rem;white-space:nowrap;pointer-events:none;transition:opacity 1s;z-index:10}
+.hint-text.gone{opacity:0}
+</style>
+</head>
+<body>
+
+<!-- TABS -->
+<div class="tree-tabs">
+  <button class="ttab on" data-tree="imperial" id="tab-imperial">İmparatorluk Hanedanı</button>
+  <button class="ttab" data-tree="selya" id="tab-selya">Selya Hanesi</button>
+</div>
+
+<div class="tree-layout">
+
+  <!-- ══ İMPARATORLUK AĞACI ══════════════════════════════════════════════ -->
+  <div class="tree-container on" id="tc-imperial">
+    <div class="hint-text" id="hint">Sürükle: kaydır &nbsp;·&nbsp; Bölgeye tıkla: bilgi</div>
+    <div class="tree-svg-wrap">
+      <svg viewBox="0 0 1100 680" width="1100" height="680" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ── BAĞLANTI ÇİZGİLERİ ──────────────────────── -->
+        <!-- Craes → Nadima → chain → Rones -->
+        <line x1="550" y1="82" x2="550" y2="108" class="fl"/>
+        <line x1="550" y1="164" x2="550" y2="192" class="fl-dash"/>
+        <text x="554" y="186" class="anno">↓ Nadima, Scifella, Reanloth, Lun Aldrisler, Domkha, Lunrye, II.Remal</text>
+        <line x1="550" y1="268" x2="550" y2="296" class="fl"/>
+        <!-- Elron → split -->
+        <polyline points="550,352 550,372 248,372 248,388" class="fl"/>
+        <polyline points="550,372 852,372 852,388" class="fl"/>
+        <!-- Selmira ─◆─ Imloth -->
+        <line x1="164" y1="416" x2="176" y2="416" class="fl" style="stroke:#7A5C18;stroke-width:1.5"/>
+        <polygon points="170,411 176,416 170,421 164,416" class="msym"/>
+        <!-- Amadon ─◆─ Meryen -->
+        <line x1="928" y1="416" x2="940" y2="416" class="fl" style="stroke:#7A5C18;stroke-width:1.5"/>
+        <polygon points="934,411 940,416 934,421 928,416" class="msym"/>
+        <!-- Imloth → Zeandor -->
+        <line x1="248" y1="444" x2="248" y2="504" class="fl"/>
+        <!-- Amadon → Lunin + Lun Aldris -->
+        <polyline points="852,444 852,474 726,474 726,504" class="fl"/>
+        <polyline points="852,474 896,474 896,504" class="fl"/>
+
+        <!-- ── TARIHSEL ZİNCİR (Sadeleştirilmiş) ── -->
+        <!-- I. Craes -->
+        <g class="fn fn-hist" id="fn-craes" onclick="showInfo('craes')">
+          <rect x="478" y="24" width="144" height="58" rx="1"/>
+          <text x="550" y="46" class="node-name">I. Craes Stallhart</text>
+          <text x="550" y="61" class="node-sub">Kurucu Hakan</text>
+          <text x="550" y="74" class="node-ks">KS 1144 →</text>
+        </g>
+        <!-- Rones -->
+        <g class="fn fn-hist" id="fn-rones" onclick="showInfo('rones')">
+          <rect x="478" y="212" width="144" height="56" rx="1"/>
+          <text x="550" y="233" class="node-name">Rones Alvro</text>
+          <text x="550" y="248" class="node-sub">Demiryumruk</text>
+          <text x="550" y="261" class="node-ks">KS 1412–1441</text>
+        </g>
+        <!-- Elron -->
+        <g class="fn fn-hist" id="fn-elron" onclick="showInfo('elron')">
+          <rect x="478" y="296" width="144" height="56" rx="1"/>
+          <text x="550" y="317" class="node-name">III. Elron Stallhart</text>
+          <text x="550" y="332" class="node-sub">Sulh Düşkünü</text>
+          <text x="550" y="345" class="node-ks">KS 1441–1452</text>
+        </g>
+
+        <!-- ── GEN 1: İMLOTH + AMADON ── -->
+        <!-- Selmira (eş) -->
+        <g class="fn fn-spouse" id="fn-selmira" onclick="showInfo('selmira')">
+          <rect x="14" y="388" width="150" height="56" rx="1"/>
+          <text x="89" y="409" class="node-name">Selmira ✝</text>
+          <text x="89" y="424" class="node-sub">İmparatoriçe</text>
+          <text x="89" y="437" class="node-ks">? – KS 1481</text>
+        </g>
+        <!-- Imloth -->
+        <g class="fn fn-dec" id="fn-imloth" onclick="showInfo('imloth')">
+          <rect x="176" y="388" width="144" height="56" rx="1"/>
+          <text x="248" y="409" class="node-name">İmloth Stallhart</text>
+          <text x="248" y="424" class="node-sub">Tembel · İmparator</text>
+          <text x="248" y="437" class="node-ks">KS 1452 – ?</text>
+        </g>
+        <!-- Amadon -->
+        <g class="fn fn-dec" id="fn-amadon" onclick="showInfo('amadon')">
+          <rect x="780" y="388" width="144" height="56" rx="1"/>
+          <text x="852" y="409" class="node-name">Amadon Stallhart</text>
+          <text x="852" y="424" class="node-sub">Enkazın Hükümdarı</text>
+          <text x="852" y="437" class="node-ks">Melik → İmparator</text>
+        </g>
+        <!-- Meryen (eş) -->
+        <g class="fn fn-spouse" id="fn-meryen" onclick="showInfo('meryen')">
+          <rect x="940" y="388" width="146" height="56" rx="1"/>
+          <text x="1013" y="409" class="node-name">Meryen Stallhart</text>
+          <text x="1013" y="424" class="node-sub">İmparatoriçe</text>
+          <text x="1013" y="437" class="node-ks">Sürgünde</text>
+        </g>
+
+        <!-- ── GEN 2: ÇOCUKLAR ── -->
+        <!-- ZEANDOR (protagonis) -->
+        <g class="fn fn-star" id="fn-zeandor" onclick="showInfo('zeandor')">
+          <rect x="176" y="504" width="144" height="62" rx="1"/>
+          <text x="248" y="526" class="node-name">Zeandor Stallhart</text>
+          <text x="248" y="541" class="node-sub">Yarının Hükümdarı</text>
+          <text x="248" y="556" class="node-ks">KS 1481 → ✦</text>
+        </g>
+        <!-- Lunin (ölü) -->
+        <g class="fn fn-dec" id="fn-lunin" onclick="showInfo('lunin')">
+          <rect x="654" y="504" width="144" height="62" rx="1"/>
+          <text x="726" y="526" class="node-name">Lunin Stallhart ✝</text>
+          <text x="726" y="541" class="node-sub">Şehzade</text>
+          <text x="726" y="556" class="node-ks">Vebada hayatını kaybetti</text>
+        </g>
+        <!-- Lun Aldris -->
+        <g class="fn fn-alive" id="fn-lun-aldris" onclick="showInfo('lun-aldris')">
+          <rect x="824" y="504" width="144" height="62" rx="1"/>
+          <text x="896" y="526" class="node-name">Lun Aldris</text>
+          <text x="896" y="541" class="node-sub">Ay Gözcüsü</text>
+          <text x="896" y="556" class="node-ks">Sürgünde</text>
+        </g>
+
+        <!-- LEGEND -->
+        <g transform="translate(20,630)">
+          <rect x="0" y="0" width="12" height="10" fill="rgba(12,8,4,.85)" stroke="rgba(61,42,20,.7)" stroke-width="1.2"/>
+          <text x="16" y="9" class="anno">Tarihsel</text>
+          <rect x="72" y="0" width="12" height="10" fill="rgba(36,18,18,.85)" stroke="rgba(100,48,48,.75)" stroke-width="1.2"/>
+          <text x="88" y="9" class="anno">Hayatını Kaybetti</text>
+          <rect x="196" y="0" width="12" height="10" fill="rgba(20,14,6,.85)" stroke="rgba(122,92,24,.75)" stroke-width="1.2"/>
+          <text x="212" y="9" class="anno">Hayatta</text>
+          <rect x="264" y="0" width="12" height="10" fill="rgba(30,20,4,.9)" stroke="#C4962A" stroke-width="2"/>
+          <text x="280" y="9" class="anno">Ana Karakter</text>
+          <rect x="362" y="0" width="12" height="10" fill="rgba(14,10,6,.7)" stroke="rgba(61,42,20,.5)" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="378" y="9" class="anno">Eş</text>
+        </g>
+
+        <!-- Çerçeve -->
+        <rect x="6" y="6" width="1088" height="668" fill="none" stroke="#3D2A14" stroke-width="1.5"/>
+        <text x="550" y="660" text-anchor="middle" class="anno" font-size="9" letter-spacing="3">STALLHART HANEDANI — İMPARATORLUK SOY AĞACI</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ══ SELYA AĞACI ══════════════════════════════════════════════════════ -->
+  <div class="tree-container" id="tc-selya">
+    <div class="tree-svg-wrap">
+      <svg viewBox="0 0 1280 440" width="1280" height="440" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ── SELYA BAĞLANTI ÇİZGİLERİ ────────────────── -->
+        <!-- Linroth ─── (noktalı) ─── Adelis -->
+        <line x1="174" y1="62" x2="204" y2="62" class="fl-selya-dash"/>
+        <text x="187" y="56" class="anno-selya" font-size="8" text-anchor="middle">Enişte</text>
+
+        <!-- Adelis ─◆─ Celios -->
+        <line x1="360" y1="62" x2="372" y2="62" class="fl-selya"/>
+        <polygon points="366,57 372,62 366,67 360,62" class="msym-selya"/>
+        <line x1="372" y1="62" x2="560" y2="62" class="fl-selya"/>
+
+        <!-- Celios ─◆─ Lysara -->
+        <line x1="760" y1="62" x2="772" y2="62" class="fl-selya"/>
+        <polygon points="766,57 772,62 766,67 760,62" class="msym-selya"/>
+        <line x1="772" y1="62" x2="1010" y2="62" class="fl-selya"/>
+
+        <!-- M1 drop → 4 çocuk (Adelis'ten) -->
+        <line x1="466" y1="62" x2="466" y2="138" class="fl-selya"/>
+        <!-- Horizontal yayılım: 108 → 668 -->
+        <line x1="108" y1="138" x2="668" y2="138" class="fl-selya"/>
+        <!-- Dikey düşüşler -->
+        <line x1="108" y1="138" x2="108" y2="218" class="fl-selya"/>
+        <line x1="288" y1="138" x2="288" y2="218" class="fl-selya"/>
+        <line x1="468" y1="138" x2="468" y2="218" class="fl-selya"/>
+        <line x1="648" y1="138" x2="648" y2="218" class="fl-selya"/>
+
+        <!-- Lysara: not listed children — noktalı not -->
+        <line x1="1091" y1="88" x2="1091" y2="120" class="fl-selya-dash"/>
+        <text x="1091" y="134" class="anno-selya" text-anchor="middle" font-size="8.5">Kayıtlı Çocuk Yok</text>
+
+        <!-- Elyndra ─ ─ ─ Zeandor (gizli ilişki) -->
+        <path d="M 545,276 Q 545,310 650,310 Q 760,310 760,276"
+              stroke="#C4962A" stroke-width="0.8" fill="none" stroke-dasharray="3 4" opacity="0.35"/>
+        <text x="653" y="308" class="anno" font-size="8" text-anchor="middle" style="fill:#7A5C18">❤ Gizli İlişki (Zeandor)</text>
+
+        <!-- ── SELYA NODES ──────────────────────────────── -->
+
+        <!-- Linroth Briktod -->
+        <g class="fn fn-related" id="fn-linroth" onclick="showInfo('linroth')">
+          <rect x="20" y="34" width="154" height="56" rx="1"/>
+          <text x="97" y="55" class="node-name" style="fill:#9A8870">Linroth Briktod</text>
+          <text x="97" y="70" class="node-sub">Liman Baronu</text>
+          <text x="97" y="82" class="node-ks">Celios'un Eniştesi</text>
+        </g>
+
+        <!-- Adelis (1. Eş) -->
+        <g class="fn fn-spouse" id="fn-adelis" onclick="showInfo('adelis')">
+          <rect x="204" y="34" width="156" height="56" rx="1"/>
+          <text x="282" y="55" class="node-name" style="fill:#D4C0F0">Adelis Selya</text>
+          <text x="282" y="70" class="node-sub">1. Eş · Gümüş Saçlı</text>
+          <text x="282" y="82" class="node-ks">Anne: Darios, Liaher, Elyndra, Enidres</text>
+        </g>
+
+        <!-- CELİOS (ana figür) -->
+        <g class="fn fn-selya-main" id="fn-celios" onclick="showInfo('celios')">
+          <rect x="560" y="28" width="200" height="68" rx="1"/>
+          <text x="660" y="52" class="node-name" style="font-size:14px">Celios Selya</text>
+          <text x="660" y="68" class="node-sub">Selya Lordu · Zeandor'un Hocası</text>
+          <text x="660" y="83" class="node-ks">Kart Tilki</text>
+        </g>
+
+        <!-- Lysara (2. Eş) -->
+        <g class="fn fn-spouse" id="fn-lysara" onclick="showInfo('lysara')">
+          <rect x="1010" y="34" width="162" height="56" rx="1"/>
+          <text x="1091" y="55" class="node-name" style="fill:#D4C0F0">Lysara Selya</text>
+          <text x="1091" y="70" class="node-sub">2. Eş · Altın Tenli</text>
+          <text x="1091" y="82" class="node-ks">Kayıtlı Çocuk Yok</text>
+        </g>
+
+        <!-- Çocuklar ─────────────────────────────────── -->
+        <!-- Darios -->
+        <g class="fn fn-selya" id="fn-darios" onclick="showInfo('darios')">
+          <rect x="30" y="218" width="156" height="58" rx="1"/>
+          <text x="108" y="239" class="node-name" style="fill:#D4C0F0">Darios Selya</text>
+          <text x="108" y="254" class="node-sub">Büyük Oğul · Fiilî Vali</text>
+          <text x="108" y="268" class="node-ks">Selya Yöneticisi</text>
+        </g>
+
+        <!-- Liaher -->
+        <g class="fn fn-selya" id="fn-liaher" onclick="showInfo('liaher')">
+          <rect x="210" y="218" width="156" height="58" rx="1"/>
+          <text x="288" y="239" class="node-name" style="fill:#D4C0F0">Liaher Selya</text>
+          <text x="288" y="254" class="node-sub">Sessiz Fırtına</text>
+          <text x="288" y="268" class="node-ks">Zeandor'un Dostu</text>
+        </g>
+
+        <!-- Elyndra -->
+        <g class="fn fn-selya" id="fn-elyndra" onclick="showInfo('elyndra')">
+          <rect x="390" y="218" width="156" height="58" rx="1"/>
+          <text x="468" y="239" class="node-name" style="fill:#D4C0F0">Elyndra Selya</text>
+          <text x="468" y="254" class="node-sub">İlahi Yıldız</text>
+          <text x="468" y="268" class="node-ks">Zeandor'un Sevgilisi ❤</text>
+        </g>
+
+        <!-- Enidres -->
+        <g class="fn fn-selya" id="fn-enidres" onclick="showInfo('enidres')">
+          <rect x="570" y="218" width="156" height="58" rx="1"/>
+          <text x="648" y="239" class="node-name" style="fill:#D4C0F0">Enidres Selya</text>
+          <text x="648" y="254" class="node-sub">Genç Oğul (Adelis'ten)</text>
+          <text x="648" y="268" class="node-ks">Tıknaz · Hesapçı</text>
+        </g>
+
+        <!-- LEGEND -->
+        <g transform="translate(20,390)">
+          <rect x="0" y="0" width="12" height="10" fill="rgba(28,15,40,.9)" stroke="rgba(175,110,210,.8)" stroke-width="1.8"/>
+          <text x="16" y="9" class="anno-selya">Ana Figür</text>
+          <rect x="92" y="0" width="12" height="10" fill="rgba(18,10,28,.85)" stroke="rgba(122,58,154,.6)" stroke-width="1.5"/>
+          <text x="108" y="9" class="anno-selya">Selya Hanesi</text>
+          <rect x="210" y="0" width="12" height="10" fill="rgba(14,10,6,.7)" stroke="rgba(61,42,20,.5)" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="226" y="9" class="anno-selya">Eş</text>
+          <rect x="250" y="0" width="12" height="10" fill="rgba(14,10,6,.65)" stroke="rgba(58,42,20,.45)" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="266" y="9" class="anno-selya">İlişkili Figür</text>
+        </g>
+
+        <!-- Çerçeve -->
+        <rect x="6" y="6" width="1268" height="428" fill="none" stroke="#5C3A7A" stroke-width="1" opacity=".4"/>
+        <text x="640" y="424" text-anchor="middle" class="anno-selya" font-size="9" letter-spacing="3">SELYA HANESİ — SOY AĞACI</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- INFO PANEL -->
+  <div class="ipanel" id="ipanel">
+    <button class="ip-close" onclick="closeInfo()">✕</button>
+    <div class="ip-body" id="ip-body"></div>
+  </div>
+
+</div><!-- /tree-layout -->
+
+<script>
+// ─── LANG ─────────────────────────────────────────────────
+let L = localStorage.getItem('si-lang') || 'tr';
+const T = o => (o&&o[L])||(o&&o.tr)||'';
+const NAV={home:{tr:'Ana Sayfa',en:'Home'},lore:{tr:'Evren',en:'Lore'},chars:{tr:'Karakterler',en:'Characters'},chaps:{tr:'Bölümler',en:'Chapters'},map:{tr:'Harita',en:'Map'},tree:{tr:'Soy Ağacı',en:'Family Tree'},quotes:{tr:'Sözler',en:'Words'}};
+function applyLang(){
+  document.getElementById('r').lang=L;
+  document.getElementById('lang-btn').textContent=L==='tr'?'EN':'TR';
+  ['home','lore','chars','chaps','map','tree','quotes'].forEach(k=>{const el=document.getElementById('nl-'+k);if(el)el.textContent=T(NAV[k]);});
+  document.getElementById('tab-imperial').textContent=L==='tr'?'İmparatorluk Hanedanı':'Imperial Dynasty';
+  document.getElementById('tab-selya').textContent=L==='tr'?'Selya Hanesi':'House Selya';
+  document.title=(L==='tr'?'Soy Ağacı':'Family Tree')+' — Stallhart';
+}
+function toggleLang(){L=L==='tr'?'en':'tr';localStorage.setItem('si-lang',L);applyLang();if(activeId)showInfo(activeId);}
+
+// ─── PERSON DATA ──────────────────────────────────────────
+const PERSONS = {
+  craes:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'I. Craes Stallhart',en:'Craes Stallhart I'},
+    title:{tr:'Kurucu Hakan',en:'Founder Khan'},
+    ks:'KS 1144',status:'historical',
+    epi:{tr:'Acımasız Hakikatin Eli',en:'Hand of Ruthless Truth'},
+    desc:{tr:'İmparatorluğun kurucusu. Boyları tek bayrak altında birleştirdi. Esaretten döndükten sonra Kutsal Kan Doktrini\'ni ilan etti.',en:"Empire's founder. United clans under one banner. Proclaimed the Holy Blood Doctrine upon returning from captivity."}
+  },
+  rones:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Rones Alvro Stallhart',en:'Rones Alvro Stallhart'},
+    title:{tr:'İmparator',en:'Emperor'},
+    ks:'KS 1412–1441',status:'historical',
+    epi:{tr:'Demiryumruk',en:'Iron Fist'},
+    desc:{tr:'Otuz yıllık demir disiplin. Burria\'yı haraca bağladı. Sokaklarda yas tutularak uğurlanan nadir imparatorlardan.',en:"Thirty years of iron discipline. Bound Burria in tribute. One of the rare emperors mourned in the streets."}
+  },
+  elron:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'III. Elron Stallhart',en:'Elron Stallhart III'},
+    title:{tr:'İmparator',en:'Emperor'},
+    ks:'KS 1441–1452',status:'historical',
+    epi:{tr:'Sulh Düşkünü',en:'The Peace-Lover'},
+    desc:{tr:'Pasif, sulhsever. Burria\'yı kalıcı olarak kaybetti. İmloth ve Amadon\'un babasıdır.',en:"Passive, peace-loving. Permanently lost Burria. Father of Imloth and Amadon."}
+  },
+  selmira:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Selmira Stallhart ✝',en:'Selmira Stallhart ✝'},
+    title:{tr:'İmparatoriçe · İmloth\'un Eşi',en:'Empress · Wife of Imloth'},
+    ks:'? – KS 1481',status:'deceased',
+    epi:{tr:'Gümüş Okyanus',en:'Silver Ocean'},
+    desc:{tr:'Uzun boylu, porselen tenli, bakır kızıl örülü saçlı. Halkın gönlünde en sevilen imparatoriçe. Zeandor\'u dünyaya getirirken hayatını kaybetti.',en:"Tall, porcelain-skinned, copper-red braided hair. Most beloved empress. Died delivering Zeandor."}
+  },
+  imloth:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'İmloth Stallhart',en:'Imloth Stallhart'},
+    title:{tr:'İmparator',en:'Emperor'},
+    ks:'KS 1452–?',status:'deceased',
+    epi:{tr:'Tembel · Derin Tuzak',en:'The Lazy · Deep Trap'},
+    desc:{tr:'Şişman, kel, apodik gözlü. Paranoya ve suçluluk içinde boğuldu. Amadon\'un ağabeyi, Zeandor\'un babasıdır.',en:"Obese, bald, apathetic eyes. Consumed by paranoia and guilt. Amadon's older brother, Zeandor's father."}
+  },
+  amadon:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Amadon Stallhart',en:'Amadon Stallhart'},
+    title:{tr:'Seltanya Meliki → İmparator',en:'Melik of Seltanya → Emperor'},
+    ks:'KS 1463–?',status:'deceased',
+    epi:{tr:'Enkazın Hükümdarı',en:'Sovereign of the Ruins'},
+    desc:{tr:'Zekâsı ve kararlılığıyla çürüyen imparatorluğu yeniden ayağa kaldırdı. Karabıçaklar\'ın kurucusu. Paranoyasına yenik düştü.',en:"His intellect revived the crumbling empire. Founded the Black Claws. Eventually succumbed to paranoia."}
+  },
+  meryen:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Meryen Stallhart',en:'Meryen Stallhart'},
+    title:{tr:'İmparatoriçe · Amadon\'un Eşi',en:"Empress · Amadon's Wife"},
+    ks:'Sürgünde',status:'alive',
+    epi:{tr:'',en:''},
+    desc:{tr:'Zarif yüzlü, soluk tenli, gri gözlü. Edun Solgar tarafından Lun Aldris\'i gizlice taçlandırmak üzere manipüle edildi.',en:"Elegant features, pale skin, gray eyes. Manipulated by Edun Solgar into secretly crowning Lun Aldris."}
+  },
+  zeandor:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Zeandor Stallhart',en:'Zeandor Stallhart'},
+    title:{tr:'Melik Vali → İmparator',en:'Governor King → Emperor'},
+    ks:'KS 1481 →',status:'alive',
+    epi:{tr:'Yarının Hükümdarı · Sürgünün Oğlu',en:"Tomorrow's Sovereign · Son of Exile"},
+    desc:{tr:'9 yaşında Selya\'ya sürgün edilen Zeandor, bilge Celios\'un yanında olgunlaştı. Erthan isyanını bastırarak tahta çıktı.',en:"Exiled to Selya at age 9, came of age under wise Celios. Ascended the throne after quelling Erthan's rebellion."}
+  },
+  lunin:{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Lunin Stallhart ✝',en:'Lunin Stallhart ✝'},
+    title:{tr:'Şehzade',en:'Crown Prince'},
+    ks:'? – KS 1467',status:'deceased',
+    epi:{tr:'Ayın Oğlu',en:'Son of the Moon'},
+    desc:{tr:'Amadon\'un büyük oğlu. Büyük Veba\'da hayatını kaybetti. Bu kayıp Amadon\'un karanlıklaşmasını hızlandırdı.',en:"Amadon's firstborn. Died in the Great Plague. This loss accelerated Amadon's descent into darkness."}
+  },
+  'lun-aldris':{
+    family:{tr:'Stallhart Hanedanı',en:'Stallhart Dynasty'},
+    name:{tr:'Lun Aldris Stallhart',en:'Lun Aldris Stallhart'},
+    title:{tr:'Şehzade',en:'Crown Prince'},
+    ks:'KS 1470 → Sürgünde',status:'alive',
+    epi:{tr:'Ay Gözcüsü · Kutsal Işığın Varisi',en:"Moonwatcher · Heir of the Sacred Light"},
+    desc:{tr:'Amadon\'un küçük oğlu. Edun Solgar tarafından gizlice taçlandırıldı. Meryen ile birlikte başkenti terk etti.',en:"Amadon's younger son. Secretly crowned by Edun Solgar. Fled the capital with Meryen."}
+  },
+  // ── SELYA ──────────────────────────────────────
+  celios:{
+    family:{tr:'Selya Hanesi',en:'House Selya'},
+    name:{tr:'Celios Selya',en:'Celios Selya'},
+    title:{tr:'Selya Lordu · Zeandor\'un Eğitmeni',en:"Lord of Selya · Zeandor's Mentor"},
+    ks:'Aktif',status:'alive',
+    epi:{tr:'Selya\'nın Kart Tilkisi',en:"The Old Fox of Selya"},
+    desc:{tr:'Derin çizgili yüzlü, siyah cüppeli, kanca burunlu eski Başvezir. Zeandor\'u Selya\'da büyüttü. İki eşi var: Adelis ve Lysara.',en:"Former Grand Vizier with deeply lined face, black robes, hooked nose. Raised Zeandor in Selya. Has two wives: Adelis and Lysara."}
+  },
+  adelis:{
+    family:{tr:'Selya Hanesi · 1. Eş',en:'House Selya · 1st Wife'},
+    name:{tr:'Adelis Selya',en:'Adelis Selya'},
+    title:{tr:'Celios\'un Birinci Eşi',en:"Celios's First Wife"},
+    ks:'',status:'alive',
+    epi:{tr:'',en:''},
+    desc:{tr:'Gümüş saçlı, zarif, vakur. Darios, Liaher, Elyndra ve Enidres\'in annesidir (proje kaydından).',en:"Silver-haired, delicate, dignified. Mother of Darios, Liaher, Elyndra, and Enidres (per project records)."}
+  },
+  lysara:{
+    family:{tr:'Selya Hanesi · 2. Eş',en:'House Selya · 2nd Wife'},
+    name:{tr:'Lysara Selya',en:'Lysara Selya'},
+    title:{tr:'Celios\'un İkinci Eşi',en:"Celios's Second Wife"},
+    ks:'',status:'alive',
+    epi:{tr:'',en:''},
+    desc:{tr:'Altın tenli, keskin kahverengi gözlü, genç görünümlü. Kayıtlı çocuğu bulunmamaktadır.',en:"Golden-skinned, sharp brown eyes, youthful appearance. No listed children in current records."}
+  },
+  darios:{
+    family:{tr:'Selya Hanesi',en:'House Selya'},
+    name:{tr:'Darios Selya',en:'Darios Selya'},
+    title:{tr:'Selya\'nın Fiilî Valisi · Büyük Oğul',en:"De Facto Governor · Eldest Son"},
+    ks:'',status:'alive',
+    epi:{tr:'',en:''},
+    desc:{tr:'Uzun boylu, kaslı, koyu siyah saçlı, dört dörtlük çeneli. Hesapçı gözleri vardır. Zeandor Melik Vali olunca yönetimde ikinci plana itildi.',en:"Tall, muscular, thick dark hair, square jaw. Calculating eyes. Pushed to second position when Zeandor became Governor King."}
+  },
+  liaher:{
+    family:{tr:'Selya Hanesi',en:'House Selya'},
+    name:{tr:'Liaher Selya',en:'Liaher Selya'},
+    title:{tr:'Zeandor\'un En Yakın Dostu',en:"Zeandor's Closest Friend"},
+    ks:'',status:'alive',
+    epi:{tr:'Sessiz Fırtına',en:'The Quiet Storm'},
+    desc:{tr:'Köşeli çeneli, derin gözlü, koyu güneş yanığı tenli, kestane saçlı. Burnunda antrenman kazasından hafif bir sol sapma var. Elyndra\'nın ağabeyidir.',en:"Angular jaw, deep-set eyes, dark sun-tanned skin, chestnut hair. Slight leftward nose curve from a training accident. Elyndra's older brother."}
+  },
+  elyndra:{
+    family:{tr:'Selya Hanesi',en:'House Selya'},
+    name:{tr:'Elyndra Selya',en:'Elyndra Selya'},
+    title:{tr:'Zeandor\'un Gizli Sevgilisi',en:"Zeandor's Secret Lover"},
+    ks:'',status:'alive',
+    epi:{tr:'İlahi Yıldız · Yıldız Işığının Mirası',en:"Divine Star · Heritage of Starlight"},
+    desc:{tr:'Buğday/zeytinsi esmer ten, kehribar/altın-kahve iri badem gözler, kalın koyu kaşlar, uzun dalgalı koyu saçlar. Zeandor ile 7 yıllık derin ve tehlikeli bir bağ. Thaelen\'den Elf dili öğreniyor.',en:"Olive-toned skin, large almond amber/golden-brown eyes, thick dark brows, long wavy dark hair. A deep and dangerous 7-year bond with Zeandor. Studies Elvish under Thaelen."}
+  },
+  enidres:{
+    family:{tr:'Selya Hanesi',en:'House Selya'},
+    name:{tr:'Enidres Selya',en:'Enidres Selya'},
+    title:{tr:'Celios\'un Genç Oğlu (Adelis\'ten)',en:"Celios's Younger Son (from Adelis)"},
+    ks:'',status:'alive',
+    epi:{tr:'Çelik İradeli Diriliş',en:'Steel-Willed Resurrection'},
+    desc:{tr:'Tıknaz, ağırbaşlı, esmer, siyah düz saçlı. Bakışları huysuz ve hesapçıdır. Proje dosyasında "Adelis\'ten" olarak kayıtlıdır.',en:'Stocky, sober, dark-skinned, straight black hair. Grumpy and calculating gaze. Recorded as "from Adelis" in the project file.'}
+  },
+  linroth:{
+    family:{tr:'Briktod Hanesi · Selya İlişkili',en:'House Briktod · Selya Associate'},
+    name:{tr:'Baron Linroth Briktod',en:'Baron Linroth Briktod'},
+    title:{tr:'Liman ve Tersane Baronu · Celios\'un Eniştesi',en:"Port & Shipyard Baron · Celios's Brother-in-Law"},
+    ks:'',status:'alive',
+    epi:{tr:'',en:''},
+    desc:{tr:'İri, fıçı gövdeli yapısıyla tanınan; kırmızı saçlı ve sakallı. Selya\'nın liman ve tersane işlerini yönetir. Celios\'un eniştesidir (Adelis\'in erkek kardeşi).',en:"Known for his large barrel-shaped build; red hair and beard. Manages Selya's port and shipyard operations. Celios's brother-in-law (Adelis's brother)."}
+  }
+};
+
+const STATUS_LABEL = {
+  alive:{tr:'Hayatta',en:'Alive'},
+  deceased:{tr:'Hayatını Kaybetti',en:'Deceased'},
+  historical:{tr:'Tarihsel Figür',en:'Historical Figure'}
+};
+
+// ─── INFO PANEL ───────────────────────────────────────────
+let activeId = null;
+
+function showInfo(id){
+  const p = PERSONS[id]; if(!p) return;
+  activeId = id;
+  document.querySelectorAll('.fn').forEach(el=>el.classList.toggle('active', el.id==='fn-'+id));
+  const sl = T(STATUS_LABEL[p.status]) || '';
+  document.getElementById('ip-body').innerHTML =
+    '<p class="ip-eye">'+T(p.family)+'</p>'+
+    '<h2 class="ip-name">'+T(p.name)+'</h2>'+
+    '<p class="ip-title">'+T(p.title)+'</p>'+
+    (p.ks?'<span class="ip-ks">'+p.ks+'</span>':'')+
+    '<div class="ip-rule"></div>'+
+    (sl?'<p class="ip-sl">'+(L==='tr'?'DURUM':'STATUS')+'</p><p class="ip-val">'+sl+'</p>':'')+
+    '<p class="ip-sl">'+(L==='tr'?'AÇIKLAMA':'DESCRIPTION')+'</p>'+
+    '<p class="ip-val">'+T(p.desc)+'</p>'+
+    (p.epi&&T(p.epi)?'<p class="ip-epi">'+T(p.epi)+'</p>':'');
+  document.getElementById('ipanel').classList.add('open');
+}
+
+function closeInfo(){
+  activeId=null;
+  document.getElementById('ipanel').classList.remove('open');
+  document.querySelectorAll('.fn').forEach(el=>el.classList.remove('active'));
+}
+
+// ─── TABS ─────────────────────────────────────────────────
+document.querySelectorAll('.ttab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ttab').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tree-container').forEach(c=>c.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('tc-'+btn.dataset.tree).classList.add('on');
+    closeInfo();
+  });
+});
+
+// ─── PAN (drag to scroll) ─────────────────────────────────
+document.querySelectorAll('.tree-container').forEach(tc=>{
+  let drag=false,sx=0,sy=0,sl=0,st=0;
+  tc.addEventListener('mousedown',e=>{
+    if(e.target.closest('.fn')||e.target.closest('#ipanel'))return;
+    drag=true;sx=e.clientX;sy=e.clientY;sl=tc.scrollLeft;st=tc.scrollTop;
+    tc.classList.add('dragging');e.preventDefault();
+  });
+  window.addEventListener('mousemove',e=>{if(!drag)return;tc.scrollLeft=sl-(e.clientX-sx);tc.scrollTop=st-(e.clientY-sy);});
+  window.addEventListener('mouseup',()=>{drag=false;tc.classList.remove('dragging');});
+  tc.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1||e.target.closest('.fn'))return;
+    drag=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;sl=tc.scrollLeft;st=tc.scrollTop;
+  },{passive:true});
+  tc.addEventListener('touchmove',e=>{
+    if(!drag)return;
+    tc.scrollLeft=sl-(e.touches[0].clientX-sx);tc.scrollTop=st-(e.touches[0].clientY-sy);
+  },{passive:true});
+  tc.addEventListener('touchend',()=>{drag=false;});
+  tc.addEventListener('click',e=>{if(!e.target.closest('.fn')&&!e.target.closest('#ipanel'))closeInfo();});
+});
+
+// ─── NAV ──────────────────────────────────────────────────
+document.getElementById('ham').addEventListener('click',()=>document.getElementById('navl').classList.toggle('open'));
+document.querySelectorAll('#navl a').forEach(a=>a.addEventListener('click',()=>document.getElementById('navl').classList.remove('open')));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo();});
+
+// Hint fade
+setTimeout(()=>{const h=document.getElementById('hint');if(h)h.classList.add('gone');},4500);
+
+applyLang();
+</script>
+
+
+<script src="assets/js/wiki.js"></script>
+<script>
+// ── WIKI.JS ENTEGRASYOnu ─────────────────────────────────
+Wiki.injectNav('soy-agaci.html');
+
+// Dil köprüsü: wiki.js Lang ↔ mevcut L değişkeni
+document.addEventListener('langchange', (e) => {
+  L = e.detail;
+  applyLang();
+  if (activeId) showInfo(activeId);
+});
+
+// Wiki search + scroll-up enjekte et
+Wiki.initWiki({ injectFooter: false });
+
+// Karakterler sayfasına link — panel içinde "Karakterler'de Aç" butonu
+const _origShow = showInfo;
+showInfo = function(id) {
+  _origShow(id);
+  const charLink = document.createElement('a');
+  charLink.href = 'karakterler.html#' + id;
+  charLink.className = 'ip-char-go';
+  charLink.textContent = L === 'tr' ? '→ Karakter sayfasına git' : '→ Go to character page';
+  charLink.style.cssText = 'display:block;margin-top:1rem;font-family:"IM Fell English",serif;font-style:italic;font-size:.76rem;color:var(--goldd);text-decoration:none;border:1px solid var(--border);padding:.28rem .7rem;transition:.18s;';
+  charLink.onmouseover = () => { charLink.style.color='var(--gold)'; charLink.style.borderColor='var(--goldd)'; };
+  charLink.onmouseout  = () => { charLink.style.color='var(--goldd)'; charLink.style.borderColor='var(--border)'; };
+  // Sadece karakterler.json'da var olan ID'ler için göster
+  const validIds = ['zeandor','amadon','imloth','celios','liaher','elyndra','lun-aldris','meryen','selmira'];
+  if (validIds.includes(id)) {
+    const body = document.getElementById('ip-body');
+    if (body) body.appendChild(charLink);
+  }
+};
+</script>
+
+</body>
+</html>

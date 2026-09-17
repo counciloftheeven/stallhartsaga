@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sözler · Stallhart Wiki</title>
+<link rel="stylesheet" href="assets/css/styles.css">
+<style>
+#quotes-sec { background: var(--bg); }
+
+/* Masonry-benzeri grid */
+.quotes-grid {
+  columns: 2; column-gap: 1.5rem;
+  margin-top: .5rem;
+}
+@media (max-width:700px) { .quotes-grid { columns: 1; } }
+@media (min-width:1100px) { .quotes-grid { columns: 3; } }
+
+/* Alıntı kartı */
+.qc {
+  break-inside: avoid;
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 1.6rem 1.75rem 1.4rem;
+  margin-bottom: 1.25rem;
+  position: relative; cursor: default;
+  transition: border-color .2s;
+}
+.qc::before, .qc::after {
+  content: ''; position: absolute;
+  width: 8px; height: 8px;
+  border-color: var(--goldd); border-style: solid;
+}
+.qc::before { top:-1px; left:-1px; border-width:2px 0 0 2px; }
+.qc::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; }
+.qc:hover   { border-color: var(--borderl); }
+
+/* Tırnak işareti */
+.q-mark {
+  font-family: 'IM Fell English', serif;
+  font-size: 4rem; line-height: .6;
+  color: rgba(196,150,42,.14);
+  display: block; margin-bottom: .5rem;
+  user-select: none;
+}
+.q-text {
+  font-size: .92rem; color: var(--parch);
+  line-height: 1.88; font-style: italic;
+  margin-bottom: 1.1rem;
+}
+.q-speaker-wrap {
+  display: flex; align-items: center;
+  justify-content: flex-end; gap: .6rem;
+}
+.q-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, var(--border));
+}
+.q-speaker {
+  font-family: 'IM Fell English', serif;
+  font-size: .72rem; color: var(--gold);
+  letter-spacing: .06em; white-space: nowrap;
+  text-decoration: none; transition: color .15s;
+}
+a.q-speaker:hover { color: var(--goldb); }
+.q-theme {
+  position: absolute; top: .85rem; right: 1rem;
+  font-family: 'IM Fell English', serif;
+  font-style: italic; font-size: .62rem;
+  color: var(--goldd); letter-spacing: .08em;
+}
+
+/* Araç çubuğu */
+.q-toolbar {
+  display: flex; gap: .75rem; flex-wrap: wrap;
+  align-items: center; margin-bottom: 2rem;
+}
+.q-search-wrap {
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: .4rem 1rem; flex: 1; min-width: 180px; max-width: 320px;
+}
+.q-search-wrap svg { width:14px; height:14px; flex-shrink:0; stroke:var(--goldd); fill:none; stroke-width:1.8; stroke-linecap:round; }
+#q-search { flex:1; background:none; border:none; outline:none; font-family:'IM Fell English',serif; font-size:.88rem; color:var(--parchl); caret-color:var(--gold); }
+#q-search::placeholder { color:var(--parchd); }
+
+.q-count { margin-left:auto; font-family:'IM Fell English',serif; font-style:italic; font-size:.78rem; color:var(--parchd); }
+
+/* Boş */
+.q-empty { grid-column:1/-1; text-align:center; padding:3rem; font-style:italic; color:var(--parchd); font-size:.9rem; }
+
+/* Rastgele söz hero */
+.q-hero {
+  background: var(--deep); border: 1px solid var(--border);
+  padding: 2.5rem; margin-bottom: 3rem; position: relative; text-align: center;
+}
+.q-hero::before { content:'❝'; position:absolute; top:-1.2rem; left:50%; transform:translateX(-50%); font-family:'IM Fell English',serif; font-size:2.5rem; color:var(--goldd); background:var(--deep); padding:0 .5rem; line-height:1; }
+.q-hero-text { font-family:'IM Fell English',serif; font-size:1.15rem; font-style:italic; color:var(--parchl); line-height:1.85; margin-bottom:1rem; }
+.q-hero-attr { font-family:'IM Fell English',serif; font-size:.8rem; color:var(--gold); }
+.q-hero-refresh { background:none; border:1px solid var(--border); color:var(--parchd); font-family:'IM Fell English',serif; font-style:italic; font-size:.72rem; padding:.25rem .7rem; cursor:pointer; margin-top:.75rem; transition:.18s; }
+.q-hero-refresh:hover { border-color:var(--goldd); color:var(--gold); }
+</style>
+</head>
+<body>
+
+<section id="quotes-sec">
+  <div class="page-hero">
+    <p class="page-hero-eye">Stallhart Destanı · Cilt I</p>
+    <h1 class="page-hero-title" id="page-title">İmparatorluğun Sözleri</h1>
+    <p class="page-hero-sub" id="page-sub">Karakterlerin ve evrenin ağzından unutulmaz alıntılar.</p>
+  </div>
+
+  <div class="inn" style="padding: 2.5rem 2rem 6rem;">
+
+    <!-- Günün sözü -->
+    <div class="q-hero" id="q-hero">
+      <p class="q-hero-text" id="hero-text">Yükleniyor…</p>
+      <p class="q-hero-attr" id="hero-attr">—</p>
+      <br>
+      <button class="q-hero-refresh" id="hero-refresh" onclick="randomHero()">↻ Başka Söz</button>
+    </div>
+
+    <!-- Araç çubuğu -->
+    <div class="q-toolbar">
+      <div class="q-search-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+        <input type="search" id="q-search" placeholder="Söz ara…" autocomplete="off">
+      </div>
+      <div id="theme-filters" style="display:flex;gap:.4rem;flex-wrap:wrap;"></div>
+      <span class="q-count" id="q-count"></span>
+    </div>
+
+    <!-- Alıntı ızgarası -->
+    <div class="quotes-grid" id="quotes-grid">
+      <div style="color:var(--parchd);font-style:italic;font-size:.88rem;">Yükleniyor…</div>
+    </div>
+
+  </div>
+</section>
+
+<script src="assets/js/wiki.js"></script>
+<script>
+const { Lang, loadData, initWiki, injectNav, esc } = Wiki;
+
+injectNav('alintılar.html');
+
+let allQuotes = [];
+let activeTheme = 'all';
+let searchQ = '';
+
+/* ── VERİ ──────────────────────────────────────────── */
+async function init() {
+  const data = await loadData('quotes.json');
+  allQuotes = data.quotes;
+  buildThemeFilters(data.themes);
+  randomHero();
+  render();
+}
+
+/* ── RASTGELE HERO ─────────────────────────────────── */
+function randomHero() {
+  if (!allQuotes.length) return;
+  const q = allQuotes[Math.floor(Math.random() * allQuotes.length)];
+  const t = obj => Lang.t(obj);
+  document.getElementById('hero-text').textContent = t(q.text);
+  document.getElementById('hero-attr').textContent = '— ' + t(q.speaker);
+}
+window.randomHero = randomHero;
+
+/* ── TEMA FİLTRELERİ ───────────────────────────────── */
+function buildThemeFilters(themes) {
+  const wrap = document.getElementById('theme-filters');
+  wrap.innerHTML = themes.map(th => `
+    <button class="f-btn ${th.id === 'all' ? 'on' : ''}"
+            data-theme="${th.id}"
+            id="tf-${th.id}">
+      ${esc(Lang.get() === 'tr' ? th.tr : th.en)}
+    </button>
+  `).join('');
+
+  wrap.addEventListener('click', e => {
+    const btn = e.target.closest('[data-theme]');
+    if (!btn) return;
+    wrap.querySelectorAll('[data-theme]').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    activeTheme = btn.dataset.theme;
+    render();
+  });
+}
+
+/* ── RENDER ────────────────────────────────────────── */
+function render() {
+  const l = Lang.get();
+  const t = obj => Lang.t(obj);
+
+  const THEME_LABELS = {
+    kader:'Kader',inanc:'İnanç',iktidar:'İktidar',
+    guven:'Güven',tarih:'Tarih',savas:'Savaş',adalet:'Adalet'
+  };
+
+  const filtered = allQuotes.filter(q => {
+    if (activeTheme !== 'all' && q.theme !== activeTheme) return false;
+    if (searchQ) {
+      const sq = searchQ.toLowerCase();
+      if (!t(q.text).toLowerCase().includes(sq) &&
+          !t(q.speaker).toLowerCase().includes(sq)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('q-count').textContent =
+    `${filtered.length} / ${allQuotes.length} ${l === 'tr' ? 'alıntı' : 'quotes'}`;
+
+  if (!filtered.length) {
+    document.getElementById('quotes-grid').innerHTML =
+      `<p class="q-empty">${l === 'tr' ? 'Sonuç bulunamadı.' : 'No results found.'}</p>`;
+    return;
+  }
+
+  document.getElementById('quotes-grid').innerHTML = filtered.map(q => {
+    const speakerEl = q.speakerId
+      ? `<a class="q-speaker" href="karakterler.html#${q.speakerId}">${esc(t(q.speaker))}</a>`
+      : `<span class="q-speaker">${esc(t(q.speaker))}</span>`;
+
+    const themeLabel = THEME_LABELS[q.theme] || q.theme;
+
+    return `
+      <div class="qc">
+        <span class="q-mark">"</span>
+        <span class="q-theme">${l === 'tr' ? themeLabel : q.theme}</span>
+        <p class="q-text">${esc(t(q.text))}</p>
+        <div class="q-speaker-wrap">
+          <div class="q-line"></div>
+          ${speakerEl}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ── ARAMA ─────────────────────────────────────────── */
+document.getElementById('q-search').addEventListener('input', function() {
+  searchQ = this.value.trim();
+  render();
+});
+
+/* ── DİL ───────────────────────────────────────────── */
+function applyLang(l) {
+  document.documentElement.lang = l;
+  document.getElementById('page-title').textContent = l === 'tr' ? 'İmparatorluğun Sözleri' : 'Words of the Empire';
+  document.getElementById('page-sub').textContent = l === 'tr'
+    ? 'Karakterlerin ve evrenin ağzından unutulmaz alıntılar.'
+    : 'Unforgettable quotes from the characters and the universe.';
+  document.getElementById('q-search').placeholder = l === 'tr' ? 'Söz ara…' : 'Search quotes…';
+  document.getElementById('hero-refresh').textContent = l === 'tr' ? '↻ Başka Söz' : '↻ Another Quote';
+  randomHero();
+  render();
+}
+
+initWiki({ onLangChange: applyLang });
+init();
+</script>
+</body>
+</html>
